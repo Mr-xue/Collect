@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+	* {
+		margin: 0;
+		padding: 0;
+	}
+
+	.ani {
+		position: relative;
+		width: 66px;
+		height: 66px;
+		margin-top: 100px;
+	}
+
+	.ani span {
+		display: block;
+		position: absolute;
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+		opacity:0;
+	}
+
+	.ani span:nth-of-type(1) {
+		left: 50%;
+		top: -10px;
+		transform: translate(-50%,0);
+		background-color: #B3E5C8;
+	}
+	.ani span:nth-of-type(2) {
+		left: -10px;
+		top: 50%;
+		transform: translate(0,-50%);
+		background-color: #F4BA31;
+	}
+	.ani span:nth-of-type(3) {
+		left: 50%;
+		bottom: -10px;
+		transform: translate(-50%,0);
+		background-color: #339FEF;
+	}
+	.ani span:nth-of-type(4) {
+		top: 50%;
+		right: -10px;
+		transform: translate(0,-50%);
+		background-color: #E2264D;
+	}
+
+	.ani span:nth-of-type(5) {
+		left: -7px;
+		top: 0;
+		transform: translate(0,-50%);
+		background-color: #A08880;
+	}
+	.ani span:nth-of-type(6) {
+		left: -7px;
+		bottom: 0;
+		transform: translate(0,50%);
+		background-color: #43C1B5;
+	}
+	.ani span:nth-of-type(7) {
+		right: -7px;
+		bottom: 0;
+		transform: translate(0,50%);
+		background-color: #F5BE3B;
+	}
+	.ani span:nth-of-type(8) {
+		right: -7px;
+		top: 0;
+		transform: translate(0,-50%);
+		background-color: #C5CA6A;
+	}
+
+	.ani:hover span:nth-of-type(1){
+		animation:jump .6s ease-out;
+	} 
+	.ani:hover span:nth-of-type(2){
+		animation:jump2 .6s ease-out;
+	} 
+	.ani:hover span:nth-of-type(3){
+		animation:jump3 .6s ease-out;
+	}
+	.ani:hover span:nth-of-type(4){
+		animation:jump4 .6s ease-out;
+	} 
+	.ani:hover span:nth-of-type(5){
+		animation:jump5 .6s ease-out;
+	} 
+	.ani:hover span:nth-of-type(6){
+		animation:jump6 .6s ease-out;
+	} 
+	.ani:hover span:nth-of-type(7){
+		animation:jump7 .6s ease-out;
+	}
+	.ani:hover span:nth-of-type(8){
+		animation:jump8 .6s ease-out;
+	} 
+
+	@keyframes jump {
+		0% {
+			opacity:1;
+			transform: translate(-50%, 0) scale(1);
+		}
+		40%{
+			transform: translate(-50%, -300%) scale(.7);
+		}
+		100% {
+			opacity:1;
+			transform: translate(-50%, -400%) scale(0);
+		}
+	}
+	@keyframes jump2 {
+		0% {
+			opacity:1;
+			transform: translate(0, -50%) scale(1);
+		}
+		40%{
+			transform: translate(-300%, -50% ) scale(.7);
+		}
+		100% {
+			opacity:1;
+			transform: translate( -400%,-50%) scale(0);
+		}
+	}
+	@keyframes jump3 {
+		0% {
+			opacity:1;
+			transform: translate(-50%,0) scale(1);
+		}
+		40%{
+			transform: translate( -50%,300% ) scale(.7);
+		}
+		100% {
+			opacity:1;
+			transform: translate( -50%,400%) scale(0);
+		}
+	}
+	@keyframes jump4 {
+		0% {
+			opacity:1;
+			transform: translate(0, -50%) scale(1);
+		}
+		40%{
+			transform: translate(300%, -50% ) scale(.7);
+		}
+		100% {
+			opacity:1;
+			transform: translate( 400%,-50%) scale(0);
+		}
+	}
+	@keyframes jump5 {
+		0% {
+			opacity:1;
+			transform: translate(0, -50%) scale(1);
+		}
+		40%{
+			transform: translate(-200%, -200% ) scale(.7);
+		}
+		100% {
+			opacity:1;
+			transform: translate( -300%,-300%) scale(0);
+		}
+	}
+	@keyframes jump6 {
+		0% {
+			opacity:1;
+			transform: translate(0, 50%) scale(1);
+		}
+		40%{
+			transform: translate(-200%, 200% ) scale(.7);
+		}
+		100% {
+			opacity:1;
+			transform: translate( -300%,300%) scale(0);
+		}
+	}
+	@keyframes jump7 {
+		0% {
+			opacity:1;
+			transform: translate(0, 50%) scale(1);
+		}
+		40%{
+			transform: translate(200%, 200% ) scale(.7);
+		}
+		100% {
+			opacity:1;
+			transform: translate( 300%,300%) scale(0);
+		}
+	}
+	@keyframes jump8 {
+		0% {
+			opacity:1;
+			transform: translate(0, 50%) scale(1);
+		}
+		40%{
+			transform: translate(200%, -200% ) scale(.7);
+		}
+		100% {
+			opacity:1;
+			transform: translate( 300%,-300%) scale(0);
+		}
+	}
+
+
+	</style>
+</head>
+
+<body>
+	<center>
+		<div class="ani">
+			<span></span>
+			<span></span>
+			<span></span>
+			<span></span>
+			<span></span>
+			<span></span>
+			<span></span>
+			<span></span>
+			<img src="zan.png" alt="">
+		</div>
+	</center>
+</body>
+
+</html>
