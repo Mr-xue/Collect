@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Js对象深克隆</title>
+</head>
+<body>
+	<code>
+		<xmp>
+			var a = {aa:'11',b:[1,2,3]}
+			var b = a;
+			// 深度克隆
+			function deepClone(param){
+				var newObj;
+				if(param instanceof Array){
+					newObj = [];
+					for (i in param){
+						newObj[i] = deepClone(param[i]);
+					}
+					return newObj;
+				}else if(param instanceof Object){
+					newObj = {};
+					for (var key in param){
+						newObj[key] = param[key]
+					}
+					return newObj
+				}else{
+					return param
+				}
+			}
+			// 深度克隆（简写)
+			function deepClone(param){
+				var newObj = param instanceof Array ? [] : {};
+				for (var key in param){
+					newObj[key] = typeof param[key] == 'object' ? deepClone(param[key]) : param[key];
+				}
+				return newObj
+			}
+			
+			var obj = deepClone(a);
+			console.log(obj);
+		</xmp>
+
+	</code>
+</body>
+</html>
