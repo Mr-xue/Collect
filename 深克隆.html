@@ -32,7 +32,9 @@
 			function deepClone(param){
 				var newObj = param instanceof Array ? [] : {};
 				for (var key in param){
-					newObj[key] = typeof param[key] == 'object' ? deepClone(param[key]) : param[key];
+					if(param.hasOwnProperty(key)){
+						newObj[key] = typeof param[key] == 'object' ? deepClone(param[key]) : param[key];
+					}
 				}
 				return newObj
 			}
