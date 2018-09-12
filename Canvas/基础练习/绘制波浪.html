@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+
+<body>
+	<canvas id="canvas"></canvas>
+	<script>
+		// 初始化
+		let canvas = document.querySelector('#canvas');
+		let w = 600, h = 600;
+		canvas.height = h;
+		canvas.width = w;
+		let ctx = canvas.getContext('2d');
+
+		// 绘制函数
+		// 通过公式： y = 波浪高度 * sin(x * 波浪宽度 + 水平位移)，来绘制正弦曲线：
+		function draw(){
+			const poitns = [];
+			const canvasWidth = w;
+			const canvasHeight = h;
+			const startX = 0;
+			const waveWidth = 0.05; // 波浪宽度，越小越宽
+			const waveHeight = 0.05; // 波浪高度，越大越高
+			const xOffset = 0; //水平位移
+		}
+	</script>
+</body>
+
+</html>
