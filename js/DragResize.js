@@ -10,8 +10,11 @@ class DragResize {
 		this.dom = document.querySelector(el);
 		this.$el = $(el);
 		this.point = ['top-left','top-center','top-right','left-center','right-center','bottom-left','bottom-center','bottom-right'];
-		this.down = false;
-		console.log(this.dom);
+
+		this.mousedown = false;
+		this.x = 0;
+		this.y = 0;
+
 		this.init();
 	}
 
@@ -32,13 +35,25 @@ class DragResize {
 
 	// 元素拖动
 	eleDrag (){
-		
+		let _self = this;
+		console.log(this.mousedown);
 		$(document).on('mousedown',this.el,function(e){
 			console.log(e);
-			this.down = true;
+			_self.mousedown = true;
 		})
-		$(document).on('mouseup',this.el,function(e){
-			this.down = false;
+		$(document).on('mouseup',function(e){
+			// _self.mousedown = false;
+		})
+
+		$(document).on('mousemove',function(e){
+			let pagex,pagey;
+			console.log(_self.mousedown);
+			if(_self.mousedown){
+				pagex = e.pageX;
+				pagey = e.pageY;
+				console.log(pagex+'--'+pagey);
+			}
+			
 		})
 	}
 }
