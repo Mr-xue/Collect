@@ -38,16 +38,17 @@ class DragResize {
 		let _self = this;
 		console.log(this.mousedown);
 		$(document).on('mousedown',this.el,function(e){
-			console.log(e);
+			
 			_self.mousedown = true;
 		})
+		
 		$(document).on('mouseup',function(e){
-			// _self.mousedown = false;
+			_self.mousedown = false;
 		})
 
 		$(document).on('mousemove',function(e){
 			let pagex,pagey;
-			console.log(_self.mousedown);
+			
 			if(_self.mousedown){
 				pagex = e.pageX;
 				pagey = e.pageY;
