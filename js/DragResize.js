@@ -45,9 +45,9 @@ class DragResize {
 	    var args = Array.prototype.slice.call(arguments).slice(2); 
 	    return function(event) { 
 	        return fun.apply(object, [event || window.event].concat(args)); 
-	    } 
+	    }
 	};
-	
+
 	addListener (element,event,fn){
 		element.addEventListener(event,fn,false);
 	}
@@ -79,28 +79,44 @@ class DragResize {
 			_self.resize = false;
 		})
 	}
-
 	 
 	// 元素拖动
 	eleDrag (){
 		let _self = this,$el;
 		// 鼠标点击
 		// this.$el[0].addEventListener('mousedown',_self.dragFun(posX,posY),false)
-		this.addListener(this.$el[0],'mousedown',_self.dragFun)
-		
+		this.addListener(this.$el[0],'mousedown',_self.BindAsEventListener(this,_self.eleDragFun,this.$el[0]))
 	}
 
-	dragFun (posX,posY,$el){
+	eleDragFun (e,...args){
+		let _self = this;
+		console.log(666);
+		let $el = $(args[0]);//触发事件的元素
 		// 元素内部偏移量
 		let posX, posY;
-		posX = e.pageX - $(this).offset().left;
-		posY = e.pageY - $(this).offset().top;
-		_self.mousedown = true;
-		console.log(this);
+		posX = e.pageX - $el.offset().left;
+		posY = e.pageY - $el.offset().top;
+		this.mousedown = true;
 		// 鼠标移动
-		_self.mouseMove(posX,posY,$el);
+		
+		// this.mouseMove(posX,posY,$el);
+		this.addListener(document,'mousemove',this.BindAsEventListener(this,this.mouseMove,posX,posY,$el))
+		this.addListener(document,'mouseup',this.removeCeshi(_self)); 
+		
+		// 测试代码
+		// this.addListener(document,'mousemove',this.BindAsEventListener(this,this.ceshi));
+		// this.addListener(document,'mouseup',this.removeCeshi(_self)); 
 	}
-
+	ceshi (){
+		console.log('绑定测试');
+	}
+	removeCeshi(){
+		let _self =this;
+		console.log(this);
+		// this.removeListener(document,'mousemove',this.BindAsEventListener(this,this.ceshi))
+		this.removeListener(document,'mousemove',this.ceshi)
+		this.removeListener(document,'mousemove',this.removeCeshi)
+	}
 	// 拖拽调节大小
 	eleResize (){
 		let _self = this,$el;
@@ -124,10 +140,13 @@ class DragResize {
 	}
 
 	// 鼠标移动
-	mouseMove(posX,posY,$el,selector){
+	// mouseMove(posX,posY,$el,selector){
+	mouseMove(e,...args){
+		// console.log(args);
 		let _self = this;
+		let posX = args[0], posY = args[1], $el = args[2];
 		// 鼠标移动
-		$(document).on('mousemove',function(e){
+		// $(document).on('mousemove',function(e){
 
 			console.log('haha');
 			if(_self.mousedown){
@@ -137,7 +156,7 @@ class DragResize {
 			}else if(_self.resize){
 				_self.dragResize(posX,posY,$el,selector,e)
 			}
-		})
+		// })
 	}
 
 	// 8向拖动调节
