@@ -68,6 +68,7 @@ var Bind = function(object, fun) {
 var BindAsEventListener = function(object, fun) { 
     var args = Array.prototype.slice.call(arguments).slice(2); 
     return function(event) { 
+        console.log( [event || window.event].concat(args));
         return fun.apply(object, [event || window.event].concat(args)); 
     } 
 }; 
@@ -99,7 +100,7 @@ var Resize =new Class({
         this.height = null; 
         this.fR = BindAsEventListener(this,this.resize); 
         this.fS = Bind(this,this.stop);     
-    }, 
+    },
     set : function(elm,direction){ 
         if(!elm)return; 
         this.resizeelm = elm; 

@@ -34,6 +34,27 @@ class DragResize {
 		this.eleDrag();
 		this.eleResize();
 	}
+	Bind(object, fun) { 
+	    var args = Array.prototype.slice.call(arguments).slice(2); 
+	    return function() { 
+	        return fun.apply(object, args); 
+	    } 
+	}; 
+
+	BindAsEventListener(object, fun) { 
+	    var args = Array.prototype.slice.call(arguments).slice(2); 
+	    return function(event) { 
+	        return fun.apply(object, [event || window.event].concat(args)); 
+	    } 
+	};
+	
+	addListener (element,event,fn){
+		element.addEventListener(event,fn,false);
+	}
+
+	removeListener (element,event,fn){
+		element.removeEventListener(event,fn,false);
+	}
 
 	// 追加拖动调节大小的8个point
 	appendPoint (){
@@ -51,28 +72,33 @@ class DragResize {
 		})
 	}
 
+	documentMouseUp(){
+		// 鼠标松开
+		$(document).addEventListener('mouseup',function(e){
+			_self.mousedown = false;
+			_self.resize = false;
+		})
+	}
+
+	 
 	// 元素拖动
 	eleDrag (){
 		let _self = this,$el;
+		// 鼠标点击
+		// this.$el[0].addEventListener('mousedown',_self.dragFun(posX,posY),false)
+		this.addListener(this.$el[0],'mousedown',_self.dragFun)
+		
+	}
+
+	dragFun (posX,posY,$el){
 		// 元素内部偏移量
 		let posX, posY;
-
-		// 鼠标点击
-		this.$el[0].addEventListener('mousedown',function(e){
-			posX = e.pageX - $(this).offset().left;
-			posY = e.pageY - $(this).offset().top;
-			$el = $(this);
-			console.log(666);
-			_self.mousedown = true;
-
-			// 鼠标移动
-			_self.mouseMove(posX,posY,$el);
-		},false)
-
-		// 鼠标松开
-		$(document).on('mouseup',function(e){
-			_self.mousedown = false;
-		})
+		posX = e.pageX - $(this).offset().left;
+		posY = e.pageY - $(this).offset().top;
+		_self.mousedown = true;
+		console.log(this);
+		// 鼠标移动
+		_self.mouseMove(posX,posY,$el);
 	}
 
 	// 拖拽调节大小
@@ -90,25 +116,32 @@ class DragResize {
 				_self.mouseMove(posX,posY,$el)
 			})
 		},false)
+
+		// 鼠标松开
+		$(document).on('mouseup',function(e){
+			_self.resize = false;
+		})
 	}
 
 	// 鼠标移动
-	mouseMove(posX,posY,$el){
+	mouseMove(posX,posY,$el,selector){
 		let _self = this;
 		// 鼠标移动
 		$(document).on('mousemove',function(e){
+
+			console.log('haha');
 			if(_self.mousedown){
 				this.x = e.pageX - posX;
 				this.y = e.pageY - posY;
 				$el.css({left:this.x+'px', top:this.y+'px'})
 			}else if(_self.resize){
-				dragResize(posX,posY,$el,selector,event)
+				_self.dragResize(posX,posY,$el,selector,e)
 			}
 		})
 	}
 
 	// 8向拖动调节
-	dragResize (posX,posY,$el,selector,event){
+	dragResize (posX,posY,$el,selector,e){
 		switch (selector){
 			// 左上
 			case 'top-left':;
