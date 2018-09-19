@@ -17,6 +17,9 @@ class DragResize {
 		// 是否是调节大小
 		this.resize = false;
 
+		// 存储触发事件的dom
+		this.handlerEle;
+
 		// 存储元素坐标
 		this.x = 0;
 		this.y = 0;
@@ -31,8 +34,9 @@ class DragResize {
 	// 初始化
 	init (){
 		this.appendPoint();
-		this.eleDrag();
-		this.eleResize();
+		this.mouseDown();
+		this.mouseMove();
+		// this.eleResize();
 	}
 	Bind(object, fun) { 
 	    var args = Array.prototype.slice.call(arguments).slice(2); 
@@ -47,14 +51,6 @@ class DragResize {
 	        return fun.apply(object, [event || window.event].concat(args)); 
 	    }
 	};
-
-	addListener (element,event,fn){
-		element.addEventListener(event,fn,false);
-	}
-
-	removeListener (element,event,fn){
-		element.removeEventListener(event,fn,false);
-	}
 
 	// 追加拖动调节大小的8个point
 	appendPoint (){
@@ -71,7 +67,6 @@ class DragResize {
 			})
 		})
 	}
-
 	documentMouseUp(){
 		// 鼠标松开
 		$(document).addEventListener('mouseup',function(e){
@@ -79,18 +74,27 @@ class DragResize {
 			_self.resize = false;
 		})
 	}
-	 
 	// 元素拖动
-	eleDrag (){
+	mouseDown (){
 		let _self = this,$el;
 		// 鼠标点击
-		// this.$el[0].addEventListener('mousedown',_self.dragFun(posX,posY),false)
-		this.addListener(this.$el[0],'mousedown',_self.BindAsEventListener(this,_self.eleDragFun,this.$el[0]))
+		// this.$el[0].addEventListener('mousedown',_self.BindAsEventListener(this,_self.eleDragFun,this.$el[0]))
+		this.$el[0].addEventListener('mousedown',function(e){
+			console.log(e.target.id);
+			// 是否点击调节点上
+			if(e.target.classList.contains('drag-point')){
+
+			}else{
+				_self.handlerEle = this;
+				console.log(_self.handlerEle);
+				_self.eleDragFun(e,_self.handlerEle)
+			}
+		},false)
 	}
 
 	eleDragFun (e,...args){
+		console.log(e);
 		let _self = this;
-		console.log(666);
 		let $el = $(args[0]);//触发事件的元素
 		// 元素内部偏移量
 		let posX, posY;
@@ -98,24 +102,14 @@ class DragResize {
 		posY = e.pageY - $el.offset().top;
 		this.mousedown = true;
 		// 鼠标移动
-		
-		// this.mouseMove(posX,posY,$el);
-		this.addListener(document,'mousemove',this.BindAsEventListener(this,this.mouseMove,posX,posY,$el))
-		this.addListener(document,'mouseup',this.removeCeshi(_self)); 
-		
-		// 测试代码
-		// this.addListener(document,'mousemove',this.BindAsEventListener(this,this.ceshi));
-		// this.addListener(document,'mouseup',this.removeCeshi(_self)); 
-	}
-	ceshi (){
-		console.log('绑定测试');
-	}
-	removeCeshi(){
-		let _self =this;
-		console.log(this);
-		// this.removeListener(document,'mousemove',this.BindAsEventListener(this,this.ceshi))
-		this.removeListener(document,'mousemove',this.ceshi)
-		this.removeListener(document,'mousemove',this.removeCeshi)
+		/*let dragMove = this.BindAsEventListener(this,this.mouseMove,posX,posY,$el);
+		console.log(dragMove);
+		document.addEventListener('mousemove',dragMove,false);
+
+		document.addEventListener('mouseup',function(){
+			console.log('鼠标抬起');
+			document.removeEventListener('mousemove',dragMove)
+		},false);*/
 	}
 	// 拖拽调节大小
 	eleResize (){
@@ -129,7 +123,7 @@ class DragResize {
 				console.log(777);
 				e.stopPropagation();
 				_self.resize = true;
-				_self.mouseMove(posX,posY,$el)
+				// _self.mouseMove(posX,posY,$el)
 			})
 		},false)
 
@@ -142,21 +136,20 @@ class DragResize {
 	// 鼠标移动
 	// mouseMove(posX,posY,$el,selector){
 	mouseMove(e,...args){
-		// console.log(args);
 		let _self = this;
 		let posX = args[0], posY = args[1], $el = args[2];
 		// 鼠标移动
-		// $(document).on('mousemove',function(e){
-
-			console.log('haha');
+		document.addEventListener('mousemove',function(e){
 			if(_self.mousedown){
-				this.x = e.pageX - posX;
-				this.y = e.pageY - posY;
-				$el.css({left:this.x+'px', top:this.y+'px'})
+				_self.x = e.pageX - posX;
+				_self.y = e.pageY - posY;
+
+				$(_self.handlerEle).css({left:_self.x+'px', top:_self.y+'px'})
 			}else if(_self.resize){
 				_self.dragResize(posX,posY,$el,selector,e)
 			}
-		// })
+		},false)
+		
 	}
 
 	// 8向拖动调节
