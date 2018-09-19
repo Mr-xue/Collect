@@ -87,6 +87,10 @@ class DragResize {
 		// 鼠标点击
 		// this.$el[0].addEventListener('mousedown',_self.BindAsEventListener(this,_self.eleDragFun,this.$el[0]))
 		this.$el[0].addEventListener('mousedown',function(e){
+			// 初次点击的坐标
+			_self.eleAttr.mouseDownX = e.pageX;
+			_self.eleAttr.mouseDownY = e.pageY;
+
 			// 初次点击获取元素偏移
 			_self.eleAttr.posX = e.pageX - $(this).offset().left;
 			_self.eleAttr.posY = e.pageY - $(this).offset().top;
@@ -138,6 +142,9 @@ class DragResize {
 
 	// 8向拖动调节
 	dragResize (e){
+		let distanceX,distanceY;
+		let width,height;
+		let left,top;
 		switch (this.eleAttr.direction){
 			// 左上
 			case 'top-left':;
@@ -146,14 +153,32 @@ class DragResize {
 			case 'top-center':;
 				break;
 			// 上右
-			case 'top-right':;
+			case 'top-right':
+				distanceX = e.pageX - this.eleAttr.mouseDownX;
+				distanceY = -(e.pageY - this.eleAttr.mouseDownY);
+				width     = Math.max(30,this.eleAttr.w + distanceX);
+				height    = Math.max(30,this.eleAttr.h + distanceY);
+				this.$el.css({width:width,height:height});
 				break;
 			// 左中
-			case 'left-center':;
+			case 'left-center':
+				distanceX = -(e.pageX - this.eleAttr.mouseDownX);
+				width = Math.max(30,this.eleAttr.w + distanceX);
+				console.log(width);
+				if(width > 30){
+					left = e.pageX;
+				}else{
+					minLeft = Math.min(e.pageX-e.eleAttr.mouseDownX, _self.eleAttr.w-30);
+					left = _self.eleAttr.w-30;
+				}
+				this.$el.css({width:width,left:left});
 				break;
 			// 右中
 			case 'right-center':
-				console.log(e.pageX);
+				distanceX = e.pageX - this.eleAttr.mouseDownX;
+				// width = this.eleAttr.w + distance < 30 ? 30 : this.eleAttr.w + distance;
+				width = Math.max(30,this.eleAttr.w + distanceX);
+				this.$el.css({width:width});
 				break;
 			// 下左
 			case 'bottom-left':;
