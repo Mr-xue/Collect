@@ -2,7 +2,9 @@
  * 作者:薛崇伟
  * 时间：2018年9月13日17:07:27
  * 功能：元素拖动，元素大小调节
- * 
+ *
+ *
+ * 暂未识别id、 拖动优化、 apply对象合并
  */
 class DragResize {
 	constructor (selector){
@@ -20,13 +22,21 @@ class DragResize {
 		// 存储触发事件的dom
 		this.handlerEle;
 
-		// 存储元素坐标
-		this.x = 0;
-		this.y = 0;
-
-		// 存储元素调节后的大小
-		this.w = null;
-		this.y = null;
+		this.eleAttr = {
+			// 调节方向
+			direction:null,
+			mouseDownX:0,
+			mouseDownY:0,
+			// 存储元素偏移量
+			posX :0,
+			posY :0,
+			// 存储元素坐标
+			left :0,
+			top  :0,
+			// 存储元素调节后的大小
+			w    : null,
+			h    : null
+		}
 
 		this.init();
 	}
@@ -36,7 +46,7 @@ class DragResize {
 		this.appendPoint();
 		this.mouseDown();
 		this.mouseMove();
-		// this.eleResize();
+		this.mouseUp();
 	}
 	Bind(object, fun) { 
 	    var args = Array.prototype.slice.call(arguments).slice(2); 
@@ -67,68 +77,42 @@ class DragResize {
 			})
 		})
 	}
-	documentMouseUp(){
-		// 鼠标松开
-		$(document).addEventListener('mouseup',function(e){
-			_self.mousedown = false;
-			_self.resize = false;
-		})
-	}
-	// 元素拖动
+	
+	/**
+	 * 鼠标按下时的操作
+	 * 
+	 */
 	mouseDown (){
 		let _self = this,$el;
 		// 鼠标点击
 		// this.$el[0].addEventListener('mousedown',_self.BindAsEventListener(this,_self.eleDragFun,this.$el[0]))
 		this.$el[0].addEventListener('mousedown',function(e){
-			console.log(e.target.id);
+			// 初次点击获取元素偏移
+			_self.eleAttr.posX = e.pageX - $(this).offset().left;
+			_self.eleAttr.posY = e.pageY - $(this).offset().top;
+
+			// 获取容器的宽高
+			_self.eleAttr.w = $(this).width();
+			_self.eleAttr.h = $(this).height();
+
 			// 是否点击调节点上
 			if(e.target.classList.contains('drag-point')){
-
+				_self.resize = true;
+				_self.eleAttr.direction=e.target.classList[1]
 			}else{
-				_self.handlerEle = this;
-				console.log(_self.handlerEle);
-				_self.eleDragFun(e,_self.handlerEle)
+				_self.mousedown = true;
 			}
 		},false)
 	}
-
-	eleDragFun (e,...args){
-		console.log(e);
+	/**
+	 * 鼠标松开操作
+	 * 
+	 */
+	mouseUp(){
 		let _self = this;
-		let $el = $(args[0]);//触发事件的元素
-		// 元素内部偏移量
-		let posX, posY;
-		posX = e.pageX - $el.offset().left;
-		posY = e.pageY - $el.offset().top;
-		this.mousedown = true;
-		// 鼠标移动
-		/*let dragMove = this.BindAsEventListener(this,this.mouseMove,posX,posY,$el);
-		console.log(dragMove);
-		document.addEventListener('mousemove',dragMove,false);
-
-		document.addEventListener('mouseup',function(){
-			console.log('鼠标抬起');
-			document.removeEventListener('mousemove',dragMove)
-		},false);*/
-	}
-	// 拖拽调节大小
-	eleResize (){
-		let _self = this,$el;
-		let posX, posY;
-		this.point.forEach(function(item,index){
-			$('.'+item)[0].addEventListener('mousedown',function(e){
-				posX = e.pageX - $(this).offset().left;
-				posY = e.pageY - $(this).offset().top;
-				$el = $(this);	
-				console.log(777);
-				e.stopPropagation();
-				_self.resize = true;
-				// _self.mouseMove(posX,posY,$el)
-			})
-		},false)
-
 		// 鼠标松开
-		$(document).on('mouseup',function(e){
+		document.addEventListener('mouseup',function(e){
+			_self.mousedown = false;
 			_self.resize = false;
 		})
 	}
@@ -137,24 +121,24 @@ class DragResize {
 	// mouseMove(posX,posY,$el,selector){
 	mouseMove(e,...args){
 		let _self = this;
-		let posX = args[0], posY = args[1], $el = args[2];
+		
 		// 鼠标移动
 		document.addEventListener('mousemove',function(e){
 			if(_self.mousedown){
-				_self.x = e.pageX - posX;
-				_self.y = e.pageY - posY;
-
-				$(_self.handlerEle).css({left:_self.x+'px', top:_self.y+'px'})
+				_self.eleAttr.left = e.pageX - _self.eleAttr.posX;
+				_self.eleAttr.top = e.pageY - _self.eleAttr.posY;
+				// 设置拖动位置
+				_self.$el.css({left:_self.eleAttr.left+'px', top:_self.eleAttr.top+'px'})
 			}else if(_self.resize){
-				_self.dragResize(posX,posY,$el,selector,e)
+				_self.dragResize(e)
 			}
 		},false)
 		
 	}
 
 	// 8向拖动调节
-	dragResize (posX,posY,$el,selector,e){
-		switch (selector){
+	dragResize (e){
+		switch (this.eleAttr.direction){
 			// 左上
 			case 'top-left':;
 				break;
@@ -168,7 +152,8 @@ class DragResize {
 			case 'left-center':;
 				break;
 			// 右中
-			case 'right-center':;
+			case 'right-center':
+				console.log(e.pageX);
 				break;
 			// 下左
 			case 'bottom-left':;
