@@ -164,12 +164,12 @@ class DragResize {
 			case 'left-center':
 				distanceX = -(e.pageX - this.eleAttr.mouseDownX);
 				width = Math.max(30,this.eleAttr.w + distanceX);
-				console.log(width);
 				if(width > 30){
 					left = e.pageX;
 				}else{
-					minLeft = Math.min(e.pageX-e.eleAttr.mouseDownX, _self.eleAttr.w-30);
-					left = _self.eleAttr.w-30;
+					console.log(8888);
+					left = (e.pageX-this.eleAttr.mouseDownX) > (this.eleAttr.w-30) ? (e.pageX-this.eleAttr.w-30) : e.pageX-this.eleAttr.mouseDownX;
+					console.log(left);
 				}
 				this.$el.css({width:width,left:left});
 				break;
