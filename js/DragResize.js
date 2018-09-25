@@ -98,15 +98,18 @@ class DragResize {
 			// 获取容器的宽高
 			_self.eleAttr.w = $(this).width();
 			_self.eleAttr.h = $(this).height();
-
 			// 是否点击调节点上
 			if(e.target.classList.contains('drag-point')){
 				_self.resize = true;
+				// 设置拖动方向
 				_self.eleAttr.direction=e.target.classList[1]
 			}else{
 				_self.mousedown = true;
 			}
+		console.log('按下：'+_self.mousedown+'---调节：'+_self.resize);
 		},false)
+
+
 	}
 	/**
 	 * 鼠标松开操作
@@ -128,6 +131,7 @@ class DragResize {
 		
 		// 鼠标移动
 		document.addEventListener('mousemove',function(e){
+			console.log('按下：'+_self.mousedown+'---调节：'+_self.resize);
 			if(_self.mousedown){
 				_self.eleAttr.left = e.pageX - _self.eleAttr.posX;
 				_self.eleAttr.top = e.pageY - _self.eleAttr.posY;
@@ -137,7 +141,6 @@ class DragResize {
 				_self.dragResize(e)
 			}
 		},false)
-		
 	}
 
 	// 8向拖动调节
@@ -145,6 +148,8 @@ class DragResize {
 		let distanceX,distanceY;
 		let width,height;
 		let left,top;
+		// 计算从左向右拖动最小left值
+		let leftStop = this.eleAttr.mouseDownX + (this.eleAttr.w-30);
 		switch (this.eleAttr.direction){
 			// 左上
 			case 'top-left':;
@@ -167,9 +172,7 @@ class DragResize {
 				if(width > 30){
 					left = e.pageX;
 				}else{
-					console.log(8888);
-					left = (e.pageX-this.eleAttr.mouseDownX) > (this.eleAttr.w-30) ? (e.pageX-this.eleAttr.w-30) : e.pageX-this.eleAttr.mouseDownX;
-					console.log(left);
+					left = (e.pageX-this.eleAttr.mouseDownX) >= (this.eleAttr.w-30) ? leftStop : e.pageX-this.eleAttr.mouseDownX;
 				}
 				this.$el.css({width:width,left:left});
 				break;
