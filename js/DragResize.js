@@ -68,8 +68,8 @@ class DragResize {
 			// 追加缩放的点
 			this.point.forEach((item2,index2)=>{
 				let tpl = document.createElement('div');
-				tpl.setAttribute('class','drag-point '+item2)
-				item.appendChild(tpl)
+				tpl.setAttribute('class','drag-point '+item2);
+				item.appendChild(tpl);
 
 				// jquery写法
 				// let tpl = `<div class="drag-point ${item}"></div>`;
@@ -85,7 +85,6 @@ class DragResize {
 	mouseDown (){
 		let _self = this,$el;
 		// 鼠标点击
-		// this.$el[0].addEventListener('mousedown',_self.BindAsEventListener(this,_self.eleDragFun,this.$el[0]))
 		this.$el[0].addEventListener('mousedown',function(e){
 			// 初次点击的坐标
 			_self.eleAttr.mouseDownX = e.pageX;
@@ -125,7 +124,6 @@ class DragResize {
 	}
 
 	// 鼠标移动
-	// mouseMove(posX,posY,$el,selector){
 	mouseMove(e,...args){
 		let _self = this;
 		
@@ -160,8 +158,8 @@ class DragResize {
 				distanceY = -(e.pageY - startY);
 				width     = Math.max(30,this.eleAttr.w + distanceX);
 				height    = Math.max(30,this.eleAttr.h + distanceY);
-				top  = height > 30 ? e.pageY : topStop;
-				left = width > 30 ? e.pageX : leftStop;
+				top       = height > 30 ? e.pageY : topStop;
+				left      = width > 30 ? e.pageX : leftStop;
 
 				this.$el.css({width:width,height:height,top:top,left:left});
 				break;
@@ -169,12 +167,8 @@ class DragResize {
 			case 'top-center':
 				distanceY = -(e.pageY - startY);
 				height    = Math.max(30,this.eleAttr.h + distanceY);
+				top       = height > 30 ? e.pageY : topStop;
 
-				if(height > 30) {
-					top = e.pageY;
-				}else{
-					top = startY+(this.eleAttr.h-30)
-				}
 				this.$el.css({width:width,height:height,top:top});
 				break;
 			// 上右
@@ -190,15 +184,16 @@ class DragResize {
 			// 左中
 			case 'left-center':
 				distanceX = -(e.pageX - startX);
-				width = Math.max(30,this.eleAttr.w + distanceX);
-				left = width > 30 ? e.pageX :  leftStop;
+				width     = Math.max(30,this.eleAttr.w + distanceX);
+				left      = width > 30 ? e.pageX :  leftStop;
 				
 				this.$el.css({width:width,left:left});
 				break;
 			// 右中
 			case 'right-center':
 				distanceX = e.pageX - startX;
-				width = Math.max(30,this.eleAttr.w + distanceX);
+				width     = Math.max(30,this.eleAttr.w + distanceX);
+				
 				this.$el.css({width:width});
 				break;
 			// 下左
@@ -207,7 +202,7 @@ class DragResize {
 				distanceY = e.pageY - startY;
 				width     = Math.max(30,this.eleAttr.w + distanceX);
 				height    = Math.max(30,this.eleAttr.h + distanceY);
-				left = width > 30 ? e.pageX : leftStop;
+				left 	  = width > 30 ? e.pageX : leftStop;
 
 				this.$el.css({width:width,height:height,left:left});
 				break;
