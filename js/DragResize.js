@@ -131,7 +131,6 @@ class DragResize {
 		
 		// 鼠标移动
 		document.addEventListener('mousemove',function(e){
-			console.log('按下：'+_self.mousedown+'---调节：'+_self.resize);
 			if(_self.mousedown){
 				_self.eleAttr.left = e.pageX - _self.eleAttr.posX;
 				_self.eleAttr.top = e.pageY - _self.eleAttr.posY;
@@ -145,52 +144,87 @@ class DragResize {
 
 	// 8向拖动调节
 	dragResize (e){
+		let startX = this.eleAttr.mouseDownX, startY = this.eleAttr.mouseDownY;
 		let distanceX,distanceY;
 		let width,height;
 		let left,top;
 		// 计算从左向右拖动最小left值
-		let leftStop = this.eleAttr.mouseDownX + (this.eleAttr.w-30);
+		let leftStop = startX + (this.eleAttr.w-30);
+		// 计算从上往下拖动的最小top值
+		let topStop = startY + (this.eleAttr.h-30);
+
 		switch (this.eleAttr.direction){
 			// 左上
-			case 'top-left':;
+			case 'top-left':
+				distanceX = -(e.pageX - startX);
+				distanceY = -(e.pageY - startY);
+				width     = Math.max(30,this.eleAttr.w + distanceX);
+				height    = Math.max(30,this.eleAttr.h + distanceY);
+				top  = height > 30 ? e.pageY : topStop;
+				left = width > 30 ? e.pageX : leftStop;
+
+				this.$el.css({width:width,height:height,top:top,left:left});
 				break;
 			// 上中
-			case 'top-center':;
+			case 'top-center':
+				distanceY = -(e.pageY - startY);
+				height    = Math.max(30,this.eleAttr.h + distanceY);
+
+				if(height > 30) {
+					top = e.pageY;
+				}else{
+					top = startY+(this.eleAttr.h-30)
+				}
+				this.$el.css({width:width,height:height,top:top});
 				break;
 			// 上右
 			case 'top-right':
-				distanceX = e.pageX - this.eleAttr.mouseDownX;
-				distanceY = -(e.pageY - this.eleAttr.mouseDownY);
+				distanceX = e.pageX - startX;
+				distanceY = -(e.pageY - startY);
 				width     = Math.max(30,this.eleAttr.w + distanceX);
 				height    = Math.max(30,this.eleAttr.h + distanceY);
-				this.$el.css({width:width,height:height});
+				top 	  = height > 30 ? e.pageY : topStop;
+
+				this.$el.css({width:width,height:height,top:top});
 				break;
 			// 左中
 			case 'left-center':
-				distanceX = -(e.pageX - this.eleAttr.mouseDownX);
+				distanceX = -(e.pageX - startX);
 				width = Math.max(30,this.eleAttr.w + distanceX);
-				if(width > 30){
-					left = e.pageX;
-				}else{
-					left = (e.pageX-this.eleAttr.mouseDownX) >= (this.eleAttr.w-30) ? leftStop : e.pageX-this.eleAttr.mouseDownX;
-				}
+				left = width > 30 ? e.pageX :  leftStop;
+				
 				this.$el.css({width:width,left:left});
 				break;
 			// 右中
 			case 'right-center':
-				distanceX = e.pageX - this.eleAttr.mouseDownX;
-				// width = this.eleAttr.w + distance < 30 ? 30 : this.eleAttr.w + distance;
+				distanceX = e.pageX - startX;
 				width = Math.max(30,this.eleAttr.w + distanceX);
 				this.$el.css({width:width});
 				break;
 			// 下左
-			case 'bottom-left':;
+			case 'bottom-left':
+				distanceX = -(e.pageX - startX);
+				distanceY = e.pageY - startY;
+				width     = Math.max(30,this.eleAttr.w + distanceX);
+				height    = Math.max(30,this.eleAttr.h + distanceY);
+				left = width > 30 ? e.pageX : leftStop;
+
+				this.$el.css({width:width,height:height,left:left});
 				break;
 			// 下中
-			case 'bottom-center':;
+			case 'bottom-center':
+				distanceY = e.pageY - startY;
+				height    = Math.max(30,this.eleAttr.h + distanceY);
+				this.$el.css({height:height});
 				break;
 			// 下右
-			case 'bottom-right':;
+			case 'bottom-right':
+				distanceX = e.pageX - startX;
+				distanceY = e.pageY - startY;
+				width     = Math.max(30,this.eleAttr.w + distanceX);
+				height    = Math.max(30,this.eleAttr.h + distanceY);
+				
+				this.$el.css({width:width,height:height});
 				break;
 		}
 	}
