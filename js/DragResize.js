@@ -1,10 +1,10 @@
 /**
  * 作者:薛崇伟
  * 时间：2018年9月13日17:07:27
- * 功能：元素拖动，元素大小调节
+ * 功能：元素拖动，元素8向拖动调节
  *
  *
- * 暂未识别id、 拖动优化、 apply对象合并
+ * 暂未做工作： 拖动优化、 对象合并、js彻底原生化、插件参数配置化
  */
 class DragResize {
 	constructor (selector){
@@ -18,9 +18,6 @@ class DragResize {
 		this.mousedown = false;
 		// 是否是调节大小
 		this.resize = false;
-
-		// 存储触发事件的dom
-		this.handlerEle;
 
 		this.eleAttr = {
 			// 调节方向
@@ -48,19 +45,19 @@ class DragResize {
 		this.mouseMove();
 		this.mouseUp();
 	}
-	Bind(object, fun) { 
+	/*Bind(object, fun) { 
 	    var args = Array.prototype.slice.call(arguments).slice(2); 
 	    return function() { 
 	        return fun.apply(object, args); 
 	    } 
-	}; 
+	}
 
 	BindAsEventListener(object, fun) { 
 	    var args = Array.prototype.slice.call(arguments).slice(2); 
 	    return function(event) { 
 	        return fun.apply(object, [event || window.event].concat(args)); 
 	    }
-	};
+	}*/
 
 	// 追加拖动调节大小的8个point
 	appendPoint (){
