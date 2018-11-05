@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		#exam,.ceshi{
+			position: absolute;
+			left: 30%;
+			top: 20px;
+			width: 120px;
+			height: 120px;
+			border:1px solid #FB6372;
+			cursor:move;
+			-webkit-user-select:none;
+		}
+		#exam{
+			left: 20px;
+			top: 20px;
+		}
+		.drag-point{
+			position: absolute;
+			z-index: 1;
+			width: 8px;
+			height: 8px;
+			opacity:.8;
+			background-color: #20C6AE;
+		}
+		.top-left{left: -4px;top: -4px; cursor: nw-resize;}
+		.top-center{top: -4px;left: 50%;transform:translateX(-50%);cursor: n-resize;}
+		.top-right{right:-4px;top:-4px;cursor: ne-resize;}
+		.bottom-left{left: -4px;bottom: -4px;cursor: sw-resize;}
+		.bottom-right{right: -4px;bottom: -4px;cursor: se-resize;}
+		.bottom-center{bottom: -4px;left: 50%;transform:translateX(-50%);cursor: s-resize;}
+		.left-center{left:-4px;top: 50%;transform:translateY(-50%);cursor: w-resize;}
+		.right-center{right: -4px;top: 50%;transform:translateY(-50%);cursor: e-resize;}
+	</style>
+</head>
+<body>
+	<div id="exam" class="ceshi">
+	</div>
+	<!-- <div class="ceshi"></div> -->
+	<script src="jquery.js"></script>
+	<script src="DragResize.js"></script>
+	<script>
+		let a = new DragResize("#exam")
+	</script>
+</body>
+</html>
