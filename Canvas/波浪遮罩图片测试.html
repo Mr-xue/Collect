@@ -49,7 +49,7 @@
 	      // content.drawImage(img,0,0)
 	        var t = 0
 	        var initY = height
-	        var scale = 5
+	        var scale = 4
 	        var drawMove = function() {
 	          var moveSin = function(t) {
 	            if(initY + scale + 1 > 0) {
@@ -68,6 +68,7 @@
 	              setTimeout(drawMove, 5)
 	              // window.requestAnimationFrame(step)
 	            } else {
+	            	console.log('加载完成');
 	             /* oldImg.src = oCanvas.toDataURL('image/png')
 	              isFinish = true
 	              $(oCanvas).remove()
