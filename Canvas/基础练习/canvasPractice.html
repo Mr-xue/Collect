@@ -27,6 +27,16 @@
 
 	let ctx = canvas.getContext('2d');
 	console.log(ctx);
+
+	// 三角形
+	ctx.beginPath();
+	ctx.moveTo(300,300);
+	ctx.lineTo(400,300);
+	ctx.lineTo(400,400);
+	ctx.fillStyle="#000";
+	ctx.fill();
+	ctx.closePath();
+
 	// 绘制背景网格
 	let size = 20;
 	ctx.beginPath();
@@ -41,7 +51,7 @@
 		ctx.lineTo(w, n*size);
 	}
 	ctx.lineWidth = 1;
-	ctx.strokeStyle = '#efefef';
+	ctx.strokeStyle = 'rgba(67,193,181,.3)';
 	ctx.stroke();
 
 	// 1.绘制线
