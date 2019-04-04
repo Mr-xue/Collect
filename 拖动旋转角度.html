@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>拖动旋转元素角度</title>
+	<style>
+		.rect{
+			position: absolute;
+			width: 150px;
+			height: 150px;
+			/*margin: 150px auto 0;*/
+			left: 200px;
+			top: 150px;
+			background-color: #2EBC67;
+		}
+		.rotate{
+			position: absolute;	
+			top:-100px;
+			left: 50%;	
+			margin-left: -7.5px;
+			width: 15px;	
+			height: 15px;	
+			border-radius:50%;
+			background-color: #2EBC67;
+		}
+		.rotate::before{
+			display: block;	
+			content:'';
+			position: absolute;	
+			left: 50%;	
+			margin-left: -1.5px;	
+			bottom: -85px;	
+			width: 3px;	
+			height: 85px;	
+			background-color: #e4c15d;
+			cursor:grab;
+		}
+	</style>
+</head>
+<body>
+	<div class="rect">
+		<div class="rotate"></div>
+	</div>
+	<script src="./js/jquery.js"></script>
+	<script>
+		$(function(){
+			// cx cy中心点
+			let startX, startY, state = false , cx,cy;
+			$('.rotate').on('mousedown',function(e){
+				startX = e.pageX,
+				startY = e.pageY;
+				state = true;
+				cx = Number(window.getComputedStyle($(".rect")[0],null).getPropertyValue('left').slice(0,-2)) + 75;
+				cy = Number(window.getComputedStyle($(".rect")[0],null).getPropertyValue('top').slice(0,-2)) + 75;
+			});
+			$(document).on('mousemove',function(e){
+				if(state){
+					let x = e.pageX - cx,
+						y = e.pageY - cy;
+					// 计算出来的弧度默认是逆时针的， 因要从顶部开始计算角度所以+90
+					let angle = Math.round(Math.atan2(y,x) / (Math.PI/180) + 90);
+					if(angle < 0){
+						angle = 360+angle;
+					}
+					console.log(angle);
+					$('.rect').css('transform','rotate('+angle+'deg)');
+				}
+			});
+			$(document).on('mouseup',function(e){
+				state = false;
+			});
+		})
+	</script>
+</body>
+</html>
