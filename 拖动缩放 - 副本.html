@@ -1,0 +1,81 @@
+
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>jQuery拖拽放大缩小插件idrag</title>
+<script type="text/javascript" src="js/jquery.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+
+#box { width: 200px; height: 100px; cursor: move; position: absolute; top: 30px; left: 30px; background-color: #FFF; border: 1px solid #CCCCCC;  -webkit-box-shadow: 10px 10px 25px #ccc;-moz-box-shadow: 10px 10px 25px #ccc;box-shadow: 10px 10px 25px #ccc;}
+
+
+
+#coor { width: 10px; height: 10px; overflow: hidden; cursor: se-resize; position: absolute; right: 0; bottom: 0; background-color: #09C; }
+
+body { background-color: #F3F3F3; }
+#exam{
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 10px;
+	height: 10px;
+	background-color: teal;
+	cursor:ne-resize;
+}
+</style>
+</head>
+<body>
+<div id="box">
+	<div id="coor"></div>
+
+	<div id="exam"></div>
+</div>
+<script>
+$(function() {
+    $(document).mousemove(function(e) {
+        if (!!this.move) {
+            var posix = !document.move_target ? {'x': 0,'y': 0} : document.move_target.posix;
+            var callback = document.call_down || function() {
+                $(this.move_target).css({
+                    'top': e.pageY - posix.y,
+                    'left': e.pageX - posix.x
+                });
+            };
+            callback.call(this, e, posix);
+        }
+    }).mouseup(function(e) {
+        if (!!this.move) {
+            var callback = document.call_up || function() {}
+            ;
+            callback.call(this, e);
+            $.extend(this, {
+                'move': false,
+                'move_target': null,
+                'call_down': false,
+                'call_up': false
+            });
+        }
+    });
+    var $box = $('#box').mousedown(function(e) {
+        var offset = $(this).offset();
+        var eleStyle = window.getComputedStyle($(this)[0],null);
+        var left = eleStyle.getPropertyValue('left').slice(0,-2);
+        var top = eleStyle.getPropertyValue('top').slice(0,-2);
+        console.log('jquery数据',offset);
+        console.log("js数据",left,top);
+        this.posix = {
+            'x': e.pageX - left,
+            'y': e.pageY - top
+        };
+        $.extend(document, {
+            'move': true,
+            'move_target': this
+        });
+    });
+});
+
+</script>
+</body>
+</html> 
