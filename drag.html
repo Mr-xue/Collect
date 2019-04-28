@@ -68,13 +68,14 @@ var Bind = function(object, fun) {
 var BindAsEventListener = function(object, fun) { 
     var args = Array.prototype.slice.call(arguments).slice(2); 
     return function(event) { 
+        console.log( [event || window.event].concat(args));
         return fun.apply(object, [event || window.event].concat(args)); 
     } 
 }; 
 
 var CurrentStyle = function(element){ 
-    return element.currentStyle || document.defaultView.getComputedStyle(element, null); 
-}; 
+    return element.currentStyle || document.defaultView.getComputedStyle(element, null);
+};
 
 function addListener(element,e,fn){ 
     element.addEventListener?element.addEventListener(e,fn,false):element.attachEvent("on" + e,fn); 
@@ -99,9 +100,9 @@ var Resize =new Class({
         this.height = null; 
         this.fR = BindAsEventListener(this,this.resize); 
         this.fS = Bind(this,this.stop);     
-    }, 
+    },
     set : function(elm,direction){ 
-        if(!elm)return; 
+        if(!elm)return;
         this.resizeelm = elm; 
         addListener(this.resizeelm,'mousedown',BindAsEventListener(this, this.start, this[direction])); 
         return this; 
@@ -111,9 +112,9 @@ var Resize =new Class({
         this.original = [parseInt(CurrentStyle(this.obj).width),parseInt(CurrentStyle(this.obj).height),parseInt(CurrentStyle(this.obj).left),parseInt(CurrentStyle(this.obj).top)]; 
         this.width = (this.original[2]||0) + this.original[0]; 
         this.height = (this.original[3]||0) + this.original[1]; 
-        addListener(document,"mousemove",this.fR); 
-        addListener(document,'mouseup',this.fS); 
-    }, 
+        addListener(document,"mousemove",this.fR);
+        addListener(document,'mouseup',this.fS);
+    },
     resize : function(e){ 
         this.fun(e); 
         Sys.IE?(this.resizeelm.onlosecapture=function(){this.fS()}):(this.resizeelm.onblur=function(){this.fS()}) 

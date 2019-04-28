@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		.bg-1{
+			fill:url(#bg-1);
+		    stroke-width: 1;
+		    stroke-opacity: .5;
+		}
+		.bg-2{
+			fill:url(#bg-2);
+		    stroke-width: 1;
+		    stroke-opacity: .5;
+		}
+	</style>
+</head>
+
+<body>
+	<svg viewBox="0 0 600 300">
+		<defs>
+			<text class="letter" id="t-a" text-anchor="middle" x="0" y="0" dy="0" dx="10,10,10,10" rotate="0" font-size="60" stroke="teal" stroke-width="1" fill="#fff">
+				a
+			</text>
+			<text  id="t-b" text-anchor="middle" x="0" y="0" dy="0" dx="10,10,10,10" rotate="0" font-size="60" stroke="teal" stroke-width="1" fill="#fff">
+				b
+			</text>
+			<text  id="t-c" text-anchor="middle" x="0" y="0" dy="0" dx="10,10,10,10" rotate="0" font-size="60" stroke="teal" stroke-width="1" fill="#fff">
+				c
+			</text>
+		</defs>
+
+		<pattern id="bg-1" viewBox="30 100 186 200" patternUnits="userSpaceOnUse" width="216" height="200" x="70%" y="0">
+			<image xlink:href="./gif/timg2.gif" width="600" height="318"></image>
+		</pattern>
+		<pattern id="bg-2" viewBox="30 100 186 200" patternUnits="userSpaceOnUse" width="216" height="200" x="70%" y="0">
+			<image xlink:href="./gif/t3.gif" width="500" height="333"></image>
+		</pattern>
+		
+		<use id="a" class="eles" xlink:href="#t-a" x="40%" y="50%"></use>
+		<use id="b" class="eles" xlink:href="#t-b" x="48%" y="50%"></use>
+		<use id="c" class="eles" xlink:href="#t-c" x="56%" y="50%"></use>
+	</svg>
+</body>
+<script src="https://cdn.bootcss.com/jquery/2.2.3/jquery.min.js"></script>
+<script>
+
+	var pat = document.querySelector('#p-bg');
+	console.log(pat);
+	var bg = ['bg-1','bg-2'];
+	$(".eles").on('click',function(){
+		var id = $(this).attr('id');
+		var r = Math.floor(Math.random()*2)
+		$('#t-'+id).removeClass().addClass(bg[r])
+	})
+</script>
+</html>
