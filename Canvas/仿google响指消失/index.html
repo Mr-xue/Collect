@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		* {
+	box-sizing: border-box;
+}
+body {
+	margin: 0;
+	min-height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+}
+
+.content {
+	position: relative;
+}
+.tips {
+	position: absolute;
+	top: 20px;
+	left: 0;
+}
+#image {
+/* 	min-width: 470px; */
+}
+
+.btn {
+	position: absolute;
+	top:0;
+	left:0;
+	font-size:20px;
+	display:none;
+}
+
+.dust {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	filter: blur(0.05em);
+}
+
+.quickFade {
+	animation: fadeout 1.0s linear forwards;
+}
+
+.fade {
+	animation: fadeout 2s linear forwards;
+}
+
+@keyframes fadeout {
+	0% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+.blur {
+	animation: fadeblur 2s ease-in forwards;
+}
+
+@keyframes fadeblur {
+	0% {
+		opacity: 1;
+		filter: blur(0.05em);
+	}
+	80% {
+		filter: blur(0.188em);
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+	</style>
+</head>
+
+<body>
+	<div class="content">
+		<div id="image">
+			<!-- 图片为网络地址才可在本地通过直接打开html调试 -->
+			<img
+                    src="https://user-gold-cdn.xitu.io/2019/5/28/16afc2ddd3d17d15?w=533&h=300&f=jpeg&s=28584"
+                    width="400"
+                />
+            </div>
+		</div>
+
+		<button id="btn">消失</button>
+</body>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>  
+<script src="./html2canvas.js"></script> 
+<script src="./chance.js"></script> 
+<script>
+	$(function(){
+		let $tar = document.querySelector("#image");
+		const image = document.querySelector("#image img");
+		const btn = document.querySelector("#btn");
+		// 点击按钮隐藏
+		$('#btn').on('click',function(){
+			ani($tar)
+		})
+		function ani(target){
+			html2canvas(target,{
+				backgrouncColor:'transparent'
+			}).then(canvas => {
+			    // document.body.appendChild(canvas);
+			    const ctx = canvas.getContext('2d');
+			    const imageData = ctx.getImageData(
+			    	0,
+			    	0,
+			    	canvas.width,
+			    	canvas.height
+		    	);
+		    	const pixelArr = imageData.data;
+		    	console.log(imageData);
+
+		    	//创建一个和图像信息数组长度相同的数组并填充0（相当于一个和原图像尺寸相同的透明图像）
+		    	const data = pixelArr.slice(0).fill(0);
+		    	//创建透明图像数组的个数，不能太小也不能太大。
+				const canvasCount = 20;
+				//将透明图像数组复制多个
+				let imageDataArray = Array.from({ length: canvasCount }, e => data.slice(0));
+				//将原图像上的像素信息随机分配进不同的透明图象上，位置保持不变
+				for (let i = 0; i < pixelArr.length; i += 4) {
+					const p = Math.floor(i / pixelArr.length * canvasCount);
+					const a = imageDataArray[weightedRandomDistrib(p, canvasCount)];
+
+					a[i] = pixelArr[i];
+					a[i + 1] = pixelArr[i + 1];
+					a[i + 2] = pixelArr[i + 2];
+					a[i + 3] = pixelArr[i + 3];
+				}
+
+				for (let i = 0; i < canvasCount; i++) {
+					const c = newCanvasFromImageData(
+						imageDataArray[i],
+						canvas.width,
+						canvas.height
+					);
+					c.classList.add("dust");
+					setTimeout(() => {
+						animateTransform(
+							c,
+							200,
+							-100,
+							chance.integer({ min: -25, max: 25 }),
+							2000
+						);
+						c.classList.add("blur");
+						setTimeout(() => {
+							c.remove();
+						}, 2050);
+					}, 70 * i);
+
+					target.appendChild(c);
+				}
+
+				Array.from(target.querySelectorAll(":not(.dust)")).map(el => {
+					el.classList.add("quickFade");
+				});
+			})
+			.catch(function(error) {
+				console.log(error);
+			});
+		}
+
+		function weightedRandomDistrib(peak, count) {
+			const prob = [],
+				seq = [];
+			for (let i = 0; i < count; i++) {
+				prob.push(Math.pow(count - Math.abs(peak - i), 6));
+				seq.push(i);
+			}
+			return chance.weighted(seq, prob);
+		}
+
+		function animateTransform(elem, sx, sy, angle, duration) {
+			elem.animate(
+				[
+					{ transform: "rotate(0) translate(0, 0)" },
+					{
+						transform: "rotate(" + angle + "deg) translate(" + sx + "px," + sy + "px)"
+					}
+				],
+				{
+					duration: duration,
+					easing: "ease-in"
+				}
+			);
+		}
+
+		function newCanvasFromImageData(imageDataArray, w, h) {
+			const canvas = document.createElement("canvas");
+			canvas.width = w;
+			canvas.height = h;
+			const tempCtx = canvas.getContext("2d");
+			tempCtx.putImageData(new ImageData(imageDataArray, w, h), 0, 0);
+
+			return canvas;
+		}
+
+	
+	})
+</script>
+</html>
