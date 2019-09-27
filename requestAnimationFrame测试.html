@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<center>
+		测试：<span id="a">0</span>
+	</center>
+	<script>
+		/*var num = 0;
+		function a() {
+			num+=10;
+			document.querySelector('#a').innerHTML=num;
+			if(num<10000) {
+				requestAnimationFrame(a)
+			}
+		}
+		a();*/
+
+		var time = +new Date();
+		function a() {
+			var b = +new Date(),
+				leftTime = b - time,
+				pre = leftTime / 3000;
+			var num = pre*10000;
+			console.log(pre,num);
+			document.querySelector('#a').innerHTML=Math.min(~~num,10000);
+			if(leftTime < 3000) {
+				requestAnimationFrame(a)
+			}
+		}
+		a();
+
+
+	</script>
+	
+</body>
+</html>
