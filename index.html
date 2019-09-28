@@ -4,11 +4,13 @@
 	<meta charset="UTF-8">
 	<title>Document</title>
 	<script src="./js/jquery.js"></script>
+	<meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <meta content="telephone=no" name="format-detection" />
 </head>
 <body>
 	<script>
 		$(function(){
-			alert('宽：',$(window).width, '高：',$(window).height);
+			alert('宽：'+$(window).width() + '   高：'+$(window).height());
 		})
 	</script>
 </body>
