@@ -8,9 +8,17 @@
     <meta content="telephone=no" name="format-detection" />
 </head>
 <body>
+	<!-- <center> -->
+		<h3 class="dpi"></h3>
+		<hr>
+		<h3 class="ua"></h3>
+	<!-- </center> -->
 	<script>
 		$(function(){
-			alert('宽：'+$(window).width() + '   高：'+$(window).height());
+			// alert('宽：'+$(window).width() + '   高：'+$(window).height());
+			// alert(window.navigator.userAgent)
+			$('.dpi').html($(window).width()+' x '+$(window).height())
+			$('.ua').html(window.navigator.userAgent);
 		})
 	</script>
 </body>
