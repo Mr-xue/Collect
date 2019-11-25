@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Mouse Zoom</title>
+	<style>
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		#pic{
+			position: relative;
+			display: block;
+			margin: 0 auto;
+			/*width: 300px;*/
+			/*transition:.1s all;*/
+			transform:scale(0.7);
+			transform-origin:0 0;
+		}
+		#thumb{
+			position: absolute;
+			right: 100px;
+			bottom: 100px;
+			width: 150px;
+			height: 255px;
+			overflow: hidden;
+		}
+		#thumb .cover{
+			position: absolute;
+			left: 25px;
+			top: 100px;
+			z-index: 10;
+			width: 100px;
+			height: 60px;
+			border:2px solid #55C67E;
+			box-shadow:0 0 0 1000px rgba(0,0,0,.5);
+			box-sizing: border-box;
+		}
+		#thumb img{
+			display: block;
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+	<div id="wrap">
+		<img ref="main" src="./img/test.png" id="pic" alt="">
+		
+		<div id="thumb" @wheel="mouseWheel">
+			<div class="cover" @mousedown.stop="mDown" @mousemove.stop="mMove" @mouseup.stop="mUp"></div>
+			<img src="./img/test.png" alt="">
+		</div>
+	</div>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+	new Vue({
+		name:'Zoom',
+		el:'#wrap',
+		data() {
+			return {
+				scale : null,
+				mainCss : {
+
+				}
+			}
+		},
+		mounted() {
+			this.getScale();
+		},
+		methods:{
+			// 获取内容区域的缩放数值
+			getScale() {
+				var scaleCss = window.getComputedStyle(this.$refs.main,null).transform,
+				 	values = scaleCss.split('(')[1].split(')')[0].split(','),
+				    a = values[0],
+				    b = values[1],
+				    c = values[2],
+				    d = values[3];
+
+				this.scale = Math.sqrt(a * a + b * b);
+			},
+			// 鼠标滑动缩放
+			mouseWheel(e) {
+				e.preventDefault();
+
+				// 放大基于的原点
+				let offX = '50%',
+					offY = '50%';
+
+				let disX = 423 * 0.05,
+					disY = 718 * 0.05;
+
+				// 判断鼠标滑动方向
+				if(e.deltaY < 0){ //放大
+					this.scale+=0.05;
+				} else { //缩小
+					this.scale-=0.05;
+				}
+
+				// 最小缩放至 0.3 最大缩放至 3
+				this.scale = Math.min(Math.max(this.scale,0.3),3);
+
+				// 计算缩放基点
+				offX = Math.round((e.offsetX / 150)*100);
+				offY = Math.round((e.offsetY / 255)*100);
+				console.log('%c 基点','color:#fff;background:#55C67E;',offX,offY);
+
+				let left = this.$refs.main.style.left;
+					left = left ? Number(left.split('px')[0]) : 0;
+				let top  = this.$refs.main.style.top;
+					top  = top ? Number(top.split('px')[0]) : 0;
+
+				this.$refs.main.style.left= (left - disX/2) + 'px';
+				this.$refs.main.style.top=  (top - disY/2) + 'px';
+				this.$refs.main.style.transform=`scale(${this.scale})`;
+			},
+			// 监听预览模块鼠标按下
+			mDown(e) {
+				console.log(e);
+			},
+			// 监听预览模块鼠标抬起
+			mUp(e) {
+
+			},
+			// 监听预览模块鼠标滑动
+			mMove(e) {
+
+			}
+
+		}
+	})
+</script>
+	<script>
+		/*var Q = selector => document.querySelector(selector);
+		
+		// 获取之前的缩放数值
+		var scale;
+		var ss = window.getComputedStyle(document.querySelector("#pic"),null).transform;
+		var values = ss.split('(')[1].split(')')[0].split(',');
+		var a = values[0];
+		var b = values[1];
+		var c = values[2];
+		var d = values[3];
+
+		scale = Math.sqrt(a * a + b * b);
+
+
+		// 放大基于的原点
+		var offX = '50%',
+			offY = '50%';
+
+		var disX = 423 * 0.05,
+			disY = 718 * 0.05;
+
+		var $pic = Q('#pic');
+		Q('#thumb').addEventListener('wheel',function(e){
+			// console.log('鼠标滑轮滚动',e);
+			
+			// 阻止滚动外部容器的滚动条
+			e.preventDefault();
+
+			// 判断鼠标滑动方向
+			if(e.deltaY < 0){ //放大
+				scale+=0.05
+			} else { //缩小
+				scale-=0.05
+			}
+
+			// 最小缩放至 0.3 最大缩放至 3
+			scale = Math.min(Math.max(scale,0.3),3);
+
+			// 计算缩放基点
+			offX = Math.round((e.offsetX / 150)*100);
+			offY = Math.round((e.offsetY / 255)*100);
+			console.log('%c 基点','color:#fff;background:#55C67E;',offX,offY);
+
+			var left = $pic.style.left,
+				left = left ? Number(left.split('px')[0]) : 0,
+				top  = $pic.style.top,
+				top  = top ? Number(top.split('px')[0]) : 0;
+
+			$pic.style.left= (left - disX/2) + 'px';
+			$pic.style.top=  (top - disY/2) + 'px';
+			$pic.style.transform=`scale(${scale})`;
+		},false)*/
+	</script>
+</body>
+</html>
+
+
+<!-- 
+	1.在预览区域滚动滑轮，放大缩小内容区域
+
+	2.根据预览区域遮罩层的位置，计算内容区域放大的基点
+
+	3.根据内容区域显示部分，在缩略图上计算遮罩层的大小及偏移
+
+	4.拖动预览区域遮罩层，内容区域同时移动
+
+	5.计算预览区域移动的边界
+
+	6.窗口size变化时，内容区域自动适应显示区域
+ -->

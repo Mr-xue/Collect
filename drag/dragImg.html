@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>设置拖动时的图像</title>
+	<style>
+		#exam{
+			width: 150px;
+			height: 150px;
+			margin: 50px auto;
+			text-align: center;
+			line-height: 150px;
+			background: #007fff;
+			color:#fff;
+		}
+		/*#pic{display: none;}*/
+	</style>
+</head>
+<body>
+
+	<div id="exam" draggable="true">拖动元素</div>
+	<img src="" alt="" id="pic">
+	<script>
+		let dom = document.querySelector('#exam');
+		dom.addEventListener('dragstart', e=>{
+			console.log('拖动开始',e);
+			// 设置拖动的格式和数据。使用事件目标的id作为数据
+ 			e.dataTransfer.setData("text/plain", e.target.id);
+
+ 			// 设置拖动图像
+			var img = new Image();
+			img.src = './pig.jpg';
+			document.querySelector("#pic").src="./pig.jpg";
+			console.log(img);
+			e.dataTransfer.setDragImage(document.querySelector("#pic"), 80, 80);
+			// e.dataTransfer.setDragImage(img, 80, 80);
+		})
+
+		dom.addEventListener('dragover', e=>{
+			e.preventDefault();
+		})
+		dom.addEventListener('drop', e=>{
+			e.preventDefault();
+		})
+	</script>
+</body>
+</html>

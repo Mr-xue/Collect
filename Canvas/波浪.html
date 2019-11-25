@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		.m-top{
+			position: relative;
+			height: 142px;
+			pointer-events: none;
+		}
+		#wave, #wave2{
+			pointer-events: none; 
+			animation:wave 30s linear infinite alternate;
+		}
+		#wave2{
+			position: absolute;
+			top:0;
+			left: -100px;
+			opacity:.4; 
+			/*animation-delay:-1s;*/
+			animation-direction: alternate-reverse;
+		}
+		@keyframes wave{
+			0%{}
+			100%{ transform:translateX(-70%);}
+		}
+	</style>
+</head>
+<body>
+
+	<div class="m-top">
+		<canvas id="wave"></canvas>
+		<canvas id="wave2"></canvas>
+	</div>
+	
+	<script>
+		
+
+		let canvas = document.querySelector('#wave'),
+			canvas2 = document.querySelector('#wave2');
+		canvas.width = canvas2.width = document.body.offsetWidth*5;
+		canvas.height = canvas.height = 142;
+
+		let canvasW = canvas.width;
+		let canvasH = canvas.height;
+
+		let xOffset  = 0, //X轴曲线初始偏移
+			xOffset2 = 0, //10轴曲线初始偏移
+			yOffset  = 0, //y轴曲线偏移
+			pointY   = 0.7, //当前y轴偏移高度
+			speed    = 0.1; //曲线偏移速度
+
+		
+
+		function draw(id) {
+			let ctx;
+			ctx = document.querySelector('#'+id).getContext('2d');
+			
+			ctx.clearRect(0, 0, canvasW, canvasH);
+
+			let bgColor = '#416CEA';
+			if(name === 'wave2') {
+				bgColor = '#58A0F2';
+			}
+			//曲线绘制
+			draWave(ctx, xOffset, yOffset, bgColor);
+			
+			xOffset += speed;
+			if (yOffset < pointY) {
+				yOffset += 0.01;
+			}
+			// requestAnimationFrame(draw);
+		}
+	
+		//绘制曲线方法
+		function draWave(ctx, xOffset = 0, yOffset = 0, bgColor) {
+			const points     = [];
+			const startX     = 0;
+			const waveWidth  = 0.02; //波浪宽度，越小越宽
+			const waveHeight = 20; //波浪高度，越大越高
+
+			ctx.beginPath();
+			for(let x = startX; x < startX + canvasW; x += 20 / canvasW){
+				/**
+				 * y = A sin(Bx + C) + D
+				 * y = 波浪高度 * sin(x * 波浪宽度 + 水平位移)
+				 * 
+				 * 1.振幅是A， 值越大，曲线越陡峭：
+				 * 2.周期是 2π/B，B 值大于 1 时，B 值越大，周期越短，B 值小于 1 大于 0 时，周期变长
+				 * 3.相移是 −C/B，在 B 不变的情况，C 为正值时，曲线向左移动，C 为负值时，曲线向右移动
+				 * 4.垂直位移是 D，控制曲线上下移动
+				 * 
+				 */
+				const y = 13 * Math.sin((startX + x) * waveWidth + xOffset);
+
+				// 固定位置波动
+				points.push([x, pointY * canvasH + y]);
+				ctx.lineTo(x, pointY * canvasH + y);
+
+				/*// 逐渐增高
+				points.push([x, (1 - yOffset) * canvasH + y]);
+				ctx.lineTo(x, (1 - yOffset) * canvasH + y);*/
+			}
+			ctx.lineTo(canvasW, canvasH);
+			ctx.lineTo(startX, canvasH);
+			ctx.lineTo(points[0][0], points[0][1]);
+			// ctx.globalAlpha = 0.7;
+			ctx.fillStyle= bgColor;
+			ctx.fill();
+		}
+
+		draw('wave');
+		draw('wave2');
+	</script>
+</body>
+</html>
