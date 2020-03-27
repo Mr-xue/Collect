@@ -16,9 +16,11 @@
 	<canvas id="canvas"></canvas>
 	<script>
 	//获取弧度
-	function getRad (degrees) { return (Math.PI * degrees) / 180; }
+	
+	function getRad (degrees) { return (Math.PI / 180) * degrees; }
+
 	// 获取角度
-	function getDeg (rads) { return (rads * 180) / Math.PI; }
+	function getDeg (rads) { return rads / (Math.PI / 180)  }
 	let canvas = document.querySelector('#canvas');
 	let w = window.innerWidth;
 	let h = window.innerHeight;
@@ -101,7 +103,7 @@
 	// 实心扇形
 	ctx.beginPath();
 	ctx.moveTo(430,90);
-	ctx.arc(430,90, 45,getRad(-30),getRad(30),true);
+	ctx.arc(430, 90, 45, getRad(-30), getRad(30), true);
 	ctx.lineWidth = 1; 
 	ctx.fillStyle="#43C1B5";
 	ctx.closePath();
