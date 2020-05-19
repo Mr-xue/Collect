@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <meta content="telephone=no" name="format-detection" />
+	<title>Document</title>
+</head>
+<body>
+	<div id="num">0</div>
+	<div id="ua"></div>
+	<div id="dp">0</div>
+<script>
+	var $ = function(s) {
+		return document.querySelector(s);
+	}
+	$('#ua').innerHTML = window.navigator.userAgent;
+	$('#dp').innerHTML = window.devicePixelRatio;
+
+	let countNum = function(el ,num, time) {
+		let lastNum = num;
+		let t = time, prev = new Date();
+
+		function count() {
+			let now = Date.now();
+			if(now - prev < t) {
+				let num = ~~((~~(now - prev) / t) * lastNum)
+				$(el).innerHTML = num;
+				requestAnimationFrame(count)
+			}else{
+				$(el).innerHTML = lastNum;
+			}
+		}
+		count();
+	}
+	countNum('#num',1000, 1500);
+
+
+</script>
+</body>
+</html>

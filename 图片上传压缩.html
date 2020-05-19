@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <meta content="telephone=no" name="format-detection" />
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="container">
+        <input type="file" id="input-img" @change="compress" />
+        <a :download="fileName" :href="compressImg">普通下载</a>
+        <hr>
+        <button @click="downloadImg">兼容 IE 下载</button>
+        <div>
+            <img :src="compressImg" />
+        </div>
+    </div>
+</body>
+<script>
+	
+</script>
+
+</html>
