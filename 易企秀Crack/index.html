@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	
+	<script src="../jquery.js"></script>
+	<script src="./cryptoJs.js"></script>
+	<script src="./data.js"></script>
+	<script>
+		// 依赖： https://lib.eqh5.com/CryptoJS/1.0.1/cryptoJs.js
+		function decrypt(str) {
+			var result = { obj : str };
+			console.log(result);
+		    var ciphertext = null
+		        , key = null
+		        , iv = null;
+		    try {
+		        var part0 = result.obj.substring(0x0, 0x13)
+		            , part1 = result.obj.substring(0x13 + 0x10);
+
+	        	key = result.obj.substring(0x13, 0x13 + 0x10),
+	            iv = key,
+	            ciphertext = part0 + part1,
+	            key = CryptoJS.enc.Utf8.parse(key),
+	            iv = CryptoJS.enc.Utf8.parse(iv);
+		        var decryptData = CryptoJS.AES.decrypt(ciphertext, key, {
+		            'iv': iv,
+		            'mode': CryptoJS.mode.CFB,
+		            'padding': CryptoJS.pad.NoPadding
+		        });
+		        return CryptoJS.enc.Utf8.stringify(decryptData);
+		    } catch (_0x36fffe) {
+		        ciphertext = result[obj]['substring'](0x0, result.obj.length - 0x10),
+		            key = result[obj][substring](result.obj.length - 0x10),
+		            iv = key,
+		            key = CryptoJS.enc.Utf8.parse(key),
+		            iv = CryptoJS.enc.Utf8.parse(iv);
+		        var decryptData = CryptoJS.AES.decrypt(ciphertext, key, {
+		            'iv': iv,
+		            'mode': CryptoJS.mode.CFB,
+		            'padding': CryptoJS.pad.NoPadding
+		        });
+		        return CryptoJS.enc.Utf8.stringify(decryptData)
+		    }
+		}     
+		console.log(decrypt(data));
+	</script>
+</body>
+</html>
