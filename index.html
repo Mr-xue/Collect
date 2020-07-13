@@ -9,15 +9,16 @@
 </head>
 <body>
 	<!-- <center> -->
+        <h3 class="size"></h3>
+        <hr>
 		<h3 class="dpi"></h3>
-		<hr>
+        <hr>
 		<h3 class="ua"></h3>
 	<!-- </center> -->
 	<script>
 		$(function(){
-			// alert('宽：'+$(window).width() + '   高：'+$(window).height());
-			// alert(window.navigator.userAgent)
-			$('.dpi').html($(window).width()+' x '+$(window).height())
+			$('.size').html($(window).width()+' x '+$(window).height())
+			$('.dpi').html(window.devicePixelRatio)
 			$('.ua').html(window.navigator.userAgent);
 		})
 	</script>
