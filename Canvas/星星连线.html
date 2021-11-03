@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>星星连线</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            #canvas {
+                background: url('./demo.jpeg') 0 0 / cover no-repeat;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <script>
+            // 屏幕大小改变
+            const canvas = document.getElementById('canvas')
+            const ctx = canvas.getContext('2d')
+
+            // 获取当前视图的宽度和高度
+            let aw = document.documentElement.clientWidth || document.body.clientWidth,
+                ah = document.documentElement.clientHeight || document.body.clientHeight
+            // 赋值给canvas
+            canvas.width = aw
+            canvas.height = ah
+
+            // 屏幕变动时也要监听实时宽高
+            window.onresize = function () {
+                aw = document.documentElement.clientWidth || document.body.clientWidth
+                ah = document.documentElement.clientHeight || document.body.clientHeight
+                // 赋值给canvas
+                canvas.width = aw
+                canvas.height = ah
+            }
+
+            // 星星、线条涉及的元素均为白色
+            ctx.fillStyle = 'white'
+            ctx.strokeStyle = 'white'
+
+            // 星星构造方法
+            function Star(x, y, r) {
+                // x,y为坐标  r为半径
+                this.x = x
+                this.y = y
+                this.r = r
+                // speed参数，在 -3 ~ 3 之间取值
+                this.speedX = Math.random() * 3 * Math.pow(-1, Math.round(Math.random()))
+                this.speedY = Math.random() * 3 * Math.pow(-1, Math.round(Math.random()))
+            }
+            // 星星绘制方法
+            Star.prototype.draw = function () {
+                ctx.beginPath()
+                ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2)
+                ctx.fill()
+                ctx.closePath()
+            }
+            // 星星移动方法
+            Star.prototype.move = function () {
+                this.x -= this.speedX
+                this.y -= this.speedY
+                // 碰到边界时，反弹，只需要把speed取反就行
+                if (this.x < 0 || this.x > aw) this.speedX *= -1
+                if (this.y < 0 || this.y > ah) this.speedX *= -1
+            }
+
+            // 画线
+            function drawLine(startX, startY, endX, endY) {
+                ctx.beginPath()
+                ctx.moveTo(startX, startY)
+                ctx.lineTo(endX, endY)
+                ctx.stroke()
+                ctx.closePath()
+            }
+
+            // 鼠标移动时带小星星
+            const mouseStar = new Star(0, 0, 3)
+            canvas.onmousemove = function (e) {
+                mouseStar.x = e.clientX
+                mouseStar.y = e.clientY
+            }
+
+            // 鼠标点击生成5个小星星
+            window.onclick = function (e) {
+                for (let i = 0; i < 5; i++) {
+                    stars.push(new Star(e.clientX, e.clientY, 3))
+                }
+            }
+
+            // 随机在canvas范围内画100个星星
+            const stars = []
+            for (let i = 0; i < 100; i++) {
+                stars.push(new Star(Math.random() * aw, Math.random() * ah, 3))
+            }
+            setInterval(() => {
+                ctx.clearRect(0, 0, aw, ah)
+                // 鼠标星星渲染
+                mouseStar.draw()
+
+                stars.forEach((star) => {
+                    star.move()
+                    star.draw()
+                })
+
+                stars.forEach((star, index) => {
+                    // 类似冒泡排序，去比较，确保所有星星两两之间都比较到
+                    for (let i = index + 1; i < stars.length; i++) {
+                        if (
+                            Math.abs(star.x - stars[i].x) < 50 &&
+                            Math.abs(star.y - stars[i].y) < 50
+                        ) {
+                            drawLine(star.x, star.y, stars[i].x, stars[i].y)
+                        }
+                    }
+
+                    // 判断鼠标星星连线
+                    if (
+                        Math.abs(mouseStar.x - star.x) < 50 &&
+                        Math.abs(mouseStar.y - star.y) < 50
+                    ) {
+                        drawLine(mouseStar.x, mouseStar.y, star.x, star.y)
+                    }
+                })
+            }, 50)
+        </script>
+    </body>
+</html>
