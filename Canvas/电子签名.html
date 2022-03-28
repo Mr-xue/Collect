@@ -33,9 +33,9 @@
         <button id="save">保存</button>
     </div>
     <canvas id="canvas"></canvas>
-    
+
     <script>
-       
+
 
 
         let canvas = document.querySelector("#canvas");
@@ -51,9 +51,9 @@
         // 利用阴影，消除锯齿
         ctx.shadowBlur = 1;
         ctx.shadowColor = '#000';
-        
+
         canvas.addEventListener('touchstart',function(e){
-            
+
             let t = e.changedTouches[0];
             ctx.beginPath();
             ctx.moveTo(t.pageX,t.pageY)
@@ -80,7 +80,7 @@
             console.log(imgPng);
             console.log('===>');
             console.log(imgJpg);
-            
+
         }
     </script>
 </body>

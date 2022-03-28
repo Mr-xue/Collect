@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+        <meta name='viewport' content='width=device-width,initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no'>
+        <meta content='telephone=no' name='format-detection' />
+        <title>Canvas实时遮罩测试</title>
+        <style>
+            #canvas {
+                display: block;
+                border: 1px solid coral;
+                margin: 100px auto;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <script>
+            document.addEventListener('DOMContentLoaded', (event) => {
+                /** @type {HTMLCanvasElement} */
+                let canvas = document.getElementById('canvas')
+                let ctx = canvas.getContext('2d')
+                canvas.width = 398
+                canvas.height = 278
+
+                let tx = 0, ty = 0;
+                // 绘制遮罩
+                function draw(x = 0, y = 0) {
+                    let img2 = new Image();
+                    img2.src = './mask3.png';
+                    img2.onload = () => {
+                        ctx.drawImage(img2,0,0,398, 278)
+
+                        // 遮罩图片绘制完成后再绘制目标图片
+                        let img = new Image()
+                        img.src = './2.jpg'
+
+                        // 计算最大可拖动距离
+                        tx = x = Math.min(Math.max(x, 398 - 796),0)
+                        ty = y = Math.min(Math.max(y, 278 - 562), 0)
+
+                        img.onload = (e) => {
+                            ctx.globalCompositeOperation = 'source-in';
+                            ctx.drawImage(img, 0, 0, 2388, 1688, x, y, 796, 562)
+                        }
+                    }
+
+                }
+
+                draw()
+
+                let sx,
+                    sy,
+                    ox = 0,
+                    oy = 0,
+                    mstate = false;
+
+                // canvas增加移动监听事件
+                canvas.addEventListener('mousedown', mDown)
+                document.addEventListener('mousemove', mMove)
+                document.addEventListener('mouseup', mUp)
+
+                canvas.addEventListener('touchstart', mDown2)
+                document.addEventListener('touchmove', mMove2,{passive:false})
+                document.addEventListener('touchend', mUp)
+
+                let scale = 1;
+                let timeFun;
+
+                canvas.onwheel = function(e) {
+                    let xx = ox, yy = oy;
+                    if (e.deltaY < 0) {
+                        // 放大
+                        scale+=.1;
+                        scale = Math.min(scale,3)
+                       
+                    }
+                    else {
+                        // 缩小
+                        scale-=.1;
+                        scale = Math.max(1,scale)
+                    }
+                    xx = ox * scale;
+                    yy = oy * scale;
+
+                    // scale = Math.min(3,Math.max(1,scale))
+                    // console.log(scale);
+                    console.log(ox,oy,scale);
+
+
+                    let img = new Image()
+                        img.src = './2.jpg'
+
+                       /*  ox *= scale;
+                        oy *= scale; */
+
+                        // 计算最大可拖动距离
+                        tx = Math.min(Math.max(xx, 398 - 796*scale),0)
+                        ty = Math.min(Math.max(yy, 278 - 562*scale), 0)
+                        img.onload = (e) => {
+                            ctx.globalCompositeOperation = 'source-in';
+                            ctx.drawImage(img, 0, 0, 2388, 1688, tx, ty, 796*scale, 562*scale)
+                        }
+
+                    clearTimeout(timeFun)
+                    timeFun = setTimeout(()=>{
+                        ox = tx;
+                        oy = ty;
+                    },500)
+                }
+
+                function mDown(e) {
+                    sx = e.pageX
+                    sy = e.pageY
+                    ox = tx;
+                    oy = ty;
+                    mstate = true
+                }
+                function mDown2(e) {
+
+                    sx = e.touches[0].pageX;
+                    sy = e.touches[0].pageY;
+                    ox = tx;
+                    oy = ty;
+                    mstate = true
+                }
+                function mMove(e) {
+                    if (mstate) {
+                        let x = ox + (e.pageX - sx),
+                            y = oy + (e.pageY - sy);
+                        // draw(x, y)
+
+                        let img = new Image()
+                        img.src = './2.jpg'
+
+                        // 计算最大可拖动距离
+                        tx = x = Math.min(Math.max(x, 398 - 796*scale),0)
+                        ty = y = Math.min(Math.max(y, 278 - 562*scale), 0)
+
+                        clearTimeout(timeFun)
+                        timeFun = setTimeout(()=>{
+                            ox = tx;
+                            oy = ty;
+                        },500)
+                        img.onload = (e) => {
+                            ctx.globalCompositeOperation = 'source-in';
+                            ctx.drawImage(img, 0, 0, 2388, 1688, x, y, 796*scale, 562*scale)
+                        }
+                    }
+                }
+                function mMove2(e) {
+                    e.preventDefault()
+
+                    if (mstate) {
+                        let x = ox + (e.touches[0].pageX - sx),
+                            y = oy + (e.touches[0].pageY - sy);
+                        // draw(x, y)
+                        let img = new Image()
+                        img.src = './2.jpg'
+
+                        // 计算最大可拖动距离
+                        tx = x = Math.min(Math.max(x, 398 - 796*scale),0)
+                        ty = y = Math.min(Math.max(y, 278 - 562*scale), 0)
+
+                        clearTimeout(timeFun)
+                        timeFun = setTimeout(()=>{
+                            ox = tx;
+                            oy = ty;
+                        },500)
+                        img.onload = (e) => {
+                            ctx.globalCompositeOperation = 'source-in';
+                            ctx.drawImage(img, 0, 0, 2388, 1688, x, y, 796*scale, 562*scale)
+                        }
+                    }
+                }
+                function mUp(e) {
+                    mstate = false
+                }
+            })
+        </script>
+    </body>
+</html>
