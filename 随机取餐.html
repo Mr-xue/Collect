@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>随机取餐</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            .main {
+                text-align: center;
+            }
+            .start {
+                margin: 0 auto;
+                width: 70px;
+                height: 35px;
+                text-align: center;
+                line-height: 35px;
+            }
+            .name {
+                margin: 100px 0 50px;
+                height: 30px;
+                color: #333;
+                font-size: 20px;
+                line-height: 30px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="main">
+            <div class="name">幸运嘉宾：waiting</div>
+            <button class="start" onclick="start()">开始</button>
+        </div>
+        <script>
+            const $ = (el) => document.querySelector(el);
+
+            let names = ['程千宇', '侯可超', '徐飞', '徐飞鹏', '杨超', '朱龙海', '薛崇伟'];
+            let len = names.length;
+            let getRandom = () => Math.floor(Math.random() * len);
+            let randomNames = function () {
+                let r1 = getRandom();
+                let r2 = getRandom();
+                if (r1 === r2) {
+                    arguments.callee();
+                } else {
+                    return `幸运嘉宾：${names[r1]} - ${names[r2]}`;
+                }
+            };
+
+            let state = false; //开始状态;
+            let time;
+            function start() {
+                const start = $('.start');
+                state = !state;
+                if (state) {
+                    start.innerText = '停止';
+                    time = setInterval(() => {
+                        let names = randomNames();
+                        if (names) {
+                            $('.name').innerText = names;
+                        }
+                    }, 30);
+                } else {
+                    start.innerText = '开始';
+                    clearInterval(time);
+                }
+            }
+        </script>
+    </body>
+</html>
