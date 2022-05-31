@@ -20,7 +20,7 @@
                 text-align: center;
                 line-height: 35px;
             }
-            .name-list{
+            .name-list {
                 margin: 30px 0;
             }
             .name {
@@ -89,39 +89,27 @@
             // 根据三角函数计算名字视差距离(64为名字模块宽度的一般，相当于三角形的对边，最后加20，为了模块间增加距离)
             let dis = 64 / Math.tan((Math.PI / 180) * (~~(360 / len) / 2)) + 20;
 
+            // 创建名字列表html
             names.forEach((item, index) => {
                 let d = document.createElement('div');
                 d.classList.add('people');
                 d.innerText = item;
 
-                // 创建名字html
                 let r = rotate * index;
                 d.style.transform = `rotateY(${r}deg) translateZ(${dis}px)`;
 
                 $('.wrap').appendChild(d);
             });
 
-            let getRandom = () => Math.floor(Math.random() * len);
-            let randomNames = function () {
-                let r1 = getRandom();
-                let r2 = getRandom();
-                if (r1 === r2) {
-                    arguments.callee();
-                } else {
-                    return `幸运嘉宾：${names[r1]} - ${names[r2]}`;
-                }
-            };
-
             let state = false; //开始状态;
             function start() {
                 if (state) return;
                 state = true;
-
                 // 计算随机旋转角度
                 let randomIndex = Math.floor(Math.random() * len);
                 let randomNum = randomIndex * rotate;
                 let r = rotate * len + randomNum;
-                console.log('输出', $('.wrap').style.transform);
+                console.log('输出', rotate, r, r / rotate, randomIndex);
                 let oriR = $('.wrap').style.transform; // 旋转前角度
                 let rotateNum = 0; //提取旋转角度
                 if (oriR) {
@@ -129,14 +117,18 @@
                 }
                 // 基于之前的角度累加
                 r += Math.abs(Number(rotateNum));
+
                 $('.wrap').style.transform = `rotateY(-${r}deg)`;
 
                 setTimeout(() => {
                     let div = document.createElement('div');
                     div.classList.add('name');
                     div.innerText = names[randomIndex];
-                    $('.name-list').appendChild(div)
+                    $('.name-list').appendChild(div);
                     state = false;
+
+                    // 处理数组，将抽中索引名字开始的数据置入数组开始，避免继续转动时角度与索引对应错误的问题
+                    names.unshift(...names.splice(randomIndex))
                 }, 1500);
             }
         </script>
