@@ -102,34 +102,52 @@
             });
 
             let state = false; //开始状态;
+            let prevNames = []; //之前抽取的姓名
             function start() {
                 if (state) return;
                 state = true;
                 // 计算随机旋转角度
                 let randomIndex = Math.floor(Math.random() * len);
-                let randomNum = randomIndex * rotate;
-                let r = rotate * len + randomNum;
-                console.log('输出', rotate, r, r / rotate, randomIndex);
-                let oriR = $('.wrap').style.transform; // 旋转前角度
-                let rotateNum = 0; //提取旋转角度
-                if (oriR) {
-                    rotateNum = oriR.match(/\((.+)deg\)/)[1];
-                }
-                // 基于之前的角度累加
-                r += Math.abs(Number(rotateNum));
 
-                $('.wrap').style.transform = `rotateY(-${r}deg)`;
-
-                setTimeout(() => {
-                    let div = document.createElement('div');
-                    div.classList.add('name');
-                    div.innerText = names[randomIndex];
-                    $('.name-list').appendChild(div);
+                // 判断重复抽取后，重新执行抽取逻辑
+                if (prevNames.includes(names[randomIndex])) {
                     state = false;
+                    // 判断抽取一个轮回后，置空抽取记录
+                    if (prevNames.length === len) {
+                        prevNames = [];
+                        Array.from($('.name-list').children).forEach((item, index) => {
+                            if (index > 0) {
+                                item.parentNode.removeChild(item);
+                            }
+                        });
+                    }
+                    arguments.callee();
+                } else {
+                    let randomNum = randomIndex * rotate;
+                    let r = rotate * len + randomNum;
+                    console.log('输出', rotate, r, r / rotate, randomIndex);
+                    let oriR = $('.wrap').style.transform; // 旋转前角度
+                    let rotateNum = 0; //提取旋转角度
+                    if (oriR) {
+                        rotateNum = oriR.match(/\((.+)deg\)/)[1];
+                    }
+                    // 基于之前的角度累加
+                    r += Math.abs(Number(rotateNum));
 
-                    // 处理数组，将抽中索引名字开始的数据置入数组开始，避免继续转动时角度与索引对应错误的问题
-                    names.unshift(...names.splice(randomIndex))
-                }, 1500);
+                    $('.wrap').style.transform = `rotateY(-${r}deg)`;
+
+                    setTimeout(() => {
+                        prevNames.push(names[randomIndex]);
+                        let div = document.createElement('div');
+                        div.classList.add('name');
+                        div.innerText = names[randomIndex];
+                        $('.name-list').appendChild(div);
+                        state = false;
+
+                        // 处理数组，将抽中索引名字开始的数据置入数组开始，避免继续转动时角度与索引对应错误的问题
+                        names.unshift(...names.splice(randomIndex));
+                    }, 1500);
+                }
             }
         </script>
     </body>
