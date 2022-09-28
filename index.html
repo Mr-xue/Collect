@@ -14,12 +14,15 @@
 		<h3 class="dpi"></h3>
         <hr>
 		<h3 class="ua"></h3>
+        <hr>
 	<!-- </center> -->
+    </script>  
 	<script>
 		$(function(){
+            const ua = window.navigator.userAgent;
 			$('.size').html($(window).width()+' x '+$(window).height())
-			$('.dpi').html(window.devicePixelRatio)
-			$('.ua').html(window.navigator.userAgent);
+			$('.dpi').html(window.devicePixelRatio);
+			$('.ua').html(ua);
 		})
 	</script>
 </body>

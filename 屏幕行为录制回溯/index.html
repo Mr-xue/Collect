@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>屏幕行为记录回溯</title>
+        <link rel="stylesheet" href="./css/rrweb.css" />
+        <script src="./js/rrweb.min.js"></script>
+        <style>
+            body {
+                padding-top: 50px;
+            }
+        </style>
+    </head>
+    <body>
+        <center>
+            <div><input type="text" placeholder="测试弹窗" /></div>
+            <div><input type="password" placeholder="密码" /></div>
+            <br />
+            <button onclick="dialog()">弹出框</button>
+
+            <hr />
+            <button onclick="play2()">行为回溯</button>
+        </center>
+
+        <script>
+            // 错误监控
+            window.onerror = function (message, source, lineno, colno, error) {
+                console.log('捕获到异常：', { message, source, lineno, colno, error });
+            };
+
+            window.addEventListener("unhandledrejection", function(e){
+                console.log('捕获到异常2：', e);
+            });
+
+            // 录制
+            var events = [];
+            window.onload = function () {
+                // 记录行为
+                rrweb.record({
+                    emit(event) {
+                        // 用任意方式存储 event
+                        if (events.length > 100) {
+                            // 当事件数量大于 100 时停止录制
+                            stopFn();
+                        } else {
+                            events.push(event);
+                        }
+                    }
+                });
+            };
+            function dialog() {
+                fetch('https://tuia.cn/test')
+                alert('弹窗');
+
+            }
+            function play() {
+                const replayer = new rrweb.Replayer(events);
+                replayer.play();
+            }
+        </script>
+    </body>
+</html>
