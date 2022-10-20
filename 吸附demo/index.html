@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>吸附demo</title>
+        <style>
+            .other {
+                position: absolute;
+                width: 100px;
+                height: 100px;
+                background-color: coral;
+            }
+            .o1{
+                left: 200px;
+                top: 200px;
+            }
+            .o2{
+                left: 220px;
+                top: 230px;
+                background-color: #5b91ff;
+            }
+            #drag {
+                position: absolute;
+                left: 350px;
+                top: 350px;
+                width: 100px;
+                height: 100px;
+                background-color: #34b657;
+                text-align: center;
+                line-height: 100px;
+                color:#fff;
+                font-size: 26px;
+            }
+            .line {
+                position: absolute;
+            }
+            .line-x {
+                left: 0;
+                right: 0;
+                height: 1px;
+                background-color: blue;
+            }
+            .line-y {
+                top: 0;
+                bottom: 0;
+                width: 1px;
+                background-color: blue;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="other o1"></div>
+        <div class="other o2"></div>
+        <div id="drag">拖动</div>
+        <div class="line line-x"></div>
+        <div class="line line-y"></div>
+        <script>
+            let $ = (sec) => document.querySelector(sec);
+
+            let dragDom = $('#drag');
+            dragDom.addEventListener('mousedown', mouseDown);
+            dragDom.addEventListener('mousemove', mouseMove);
+            dragDom.addEventListener('mouseup', mouseUp);
+
+            // 按下状态及初始坐标
+            let mouseState = false;
+            let startX = 0,
+                startY = 0;
+
+            // 元素坐标点
+            let otherX = [200, 250, 300],
+                otherY = [200, 250, 300];
+            let selfX = [],
+                selfY = [];
+
+            // 元素初始样式数据
+            let dragData = { left: 220, top: 220 };
+            let pointX = '',
+                pointY = '';
+
+            let diff = 10; //吸附距离
+
+            function mouseDown(e) {
+                mouseState = true;
+                startX = e.pageX;
+                startY = e.pageY;
+                dragData.left = dragDom.offsetLeft;
+                dragData.top = dragDom.offsetTop;
+
+                // 获取其他元素坐标点
+                getOtherCoord()
+            }
+
+            function mouseMove(e) {
+                // console.log('输出',e);
+                if (mouseState) {
+                    let offX = e.pageX - startX,
+                        offY = e.pageY - startY;
+
+                    // 设置位置
+                    let left = dragData.left + offX,
+                        top = dragData.top + offY;
+
+                    dragDom.style.left = left + 'px';
+                    dragDom.style.top = top + 'px';
+
+                    selfX = [left, left + 50, left + 100];
+                    selfY = [top, top + 50, top + 100];
+                    setPoint();
+                    createLine();
+                    adsorb();
+                }
+            }
+            function mouseUp(e) {
+                mouseState = false;
+            }
+
+
+            // 获取其他元素坐标点
+            function getOtherCoord() {
+                let eles = document.querySelectorAll('.other');
+                eles.forEach(item => {
+                    console.log('输出',item);
+                    otherX.push(item.offsetLeft)
+                    otherX.push(item.offsetLeft+50)
+                    otherX.push(item.offsetLeft+100)
+
+                    otherY.push(item.offsetTop)
+                    otherY.push(item.offsetTop+50)
+                    otherY.push(item.offsetTop+100)
+                })
+                otherX = Array.from(new Set(otherX))
+                otherY = Array.from(new Set(otherY))
+            }
+            // 获取鼠标拖动方向
+            function setPoint(offX, offY) {
+                if (offX > 0) {
+                    pointX = 'right';
+                } else {
+                    pointX = 'left';
+                }
+
+                if (offY > 0) {
+                    pointY = 'down';
+                } else {
+                    pointY = 'up';
+                }
+            }
+
+            // 创建辅助线
+            function createLine() {
+                let xline = [],
+                    yline = [];
+                // 纵向辅助线
+                selfX.forEach((self) => {
+                    otherX.forEach((other) => {
+                        if (Math.abs(self - other) <= diff) {
+                            yline.push(other);
+                        }
+                    });
+                });
+                // 横向辅助线
+                selfY.forEach((self) => {
+                    otherY.forEach((other) => {
+                        if (Math.abs(self - other) <= diff) {
+                            xline.push(other);
+                        }
+                    });
+                });
+                let left = 0,top = 0;
+                if (xline.length) {
+                    top = Math.min(...xline);
+                }
+
+                if (yline.length) {
+                    left = Math.min(...yline);
+                }
+
+                console.log('输出',selfX,otherX,yline);
+                $('.line-x').style.top = top + 'px';
+                $('.line-y').style.left = left + 'px';
+
+                //吸附
+                adsorb(left,top)
+            }
+            // 吸附
+            function adsorb(left,top) {
+                if(left){
+                    console.log('输出',left);
+                    if(Math.abs(selfX[0] - left) <= diff){
+                        dragDom.style.left = left+'px'
+                    }else if(Math.abs(selfX[1] - left) <= diff){
+                        dragDom.style.left = (left - 50) +'px';
+                    }else if(Math.abs(selfX[2] - left) <= diff){
+                        dragDom.style.left = (left - 100) +'px';
+                    }
+                }
+
+                if(top){
+                    console.log('输出',top);
+                    if(Math.abs(selfY[0] - top) <= diff){
+                        dragDom.style.top = top+'px'
+                    }else if(Math.abs(selfY[1] - top) <= diff){
+                        dragDom.style.top = (top - 50) +'px';
+                    }else if(Math.abs(selfY[2] - top) <= diff){
+                        dragDom.style.top = (top - 100) +'px';
+                    }
+                }
+            }
+        </script>
+    </body>
+</html>
