@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		canvas{
+			display: block;
+			border:1px solid red;
+			margin: 0 auto;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas" width="500" height="300"></canvas>
+	
+	<script>
+		let canvas = document.getElementById('canvas');
+		let context = canvas.getContext('2d');
+
+		// 1.绘制星星
+		drawStar(context, 50, 20, 100,100,'red')
+		function drawStar(ctx, R, r, x, y, fillStyle) {
+		    //  r、R分别是内外圆半径
+		    // x、y分别是水平、垂直偏移量
+		    
+		    ctx.beginPath();
+		    for(var i = 0; i < 5; i ++) {
+		        // 外顶点(x1,y1)  内顶点(x2,y2)
+		        var x1 = Math.cos((18 + 72 * i) / 180 * Math.PI) * R,
+		            y1 = Math.sin((18 + 72 * i) / 180 * Math.PI) * R,
+		            x2 = Math.cos((54 + 72 * i) / 180 * Math.PI) * r,
+		            y2 = Math.sin((54 + 72 * i) / 180 * Math.PI) * r;
+
+		        /*var x1 = Math.cos((-90 + 72 * i) / 180 * Math.PI) * R,
+		            y1 = Math.sin((-90 + 72 * i) / 180 * Math.PI) * R,
+		            x2 = Math.cos((-54 + 72 * i) / 180 * Math.PI) * r,
+		            y2 = Math.sin((-54 + 72 * i) / 180 * Math.PI) * r;*/
+		            
+		        ctx.lineTo(x1 + x, y1 + y);
+		        ctx.lineTo(x2 + x, y2 + y);
+		    }
+		    ctx.closePath();
+		    ctx.fillStyle = fillStyle;
+		    ctx.fill();
+		}
+
+		// 2.绘制核桃爱心
+		let az = canvas;      
+		let cont = context;       
+		let get_arr = function(a,len){      
+		    let arr=[];         
+		    for(let i=0;i<len;i++){              
+		        let step = i/len*(Math.PI*2);//递增的θ               
+		        let vector = {             
+		            x : a*(16 * Math.pow(Math.sin(step), 3)),
+		            y : -a*(13 * Math.cos(step) - 5 * Math.cos(2 * step) - 2 * Math.cos(3 * step) - Math.cos(4 * step))      
+		        }
+		        arr.push(vector); 
+		    }
+		    return arr;        
+		}
+
+		function draw_heart(){            
+		    cont.beginPath();          
+		    cont.translate(200,200);//设置偏移让心形显示完整          
+		    cont.strokeStyle = 'red';         
+		    cont.lineWidth = 1;          
+		    let len = 50;           
+		    let arr = get_arr(1,50)//获取心形所有点的数据  心形放大4倍          
+		    console.log(arr);           
+		    for(let i=0;i<len;i++){               
+		       cont.lineTo(arr[i].x,arr[i].y);//心形的点一一被描绘出来            
+		    }           
+		     cont.stroke();        
+		   }        
+		draw_heart();
+	</script>
+</body>
+</html>

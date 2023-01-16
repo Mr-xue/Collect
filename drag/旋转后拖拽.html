@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Document</title>
+        <style>
+            #drag {
+                position: absolute;
+                left: 150px;
+                top: 150px;
+                width: 100px;
+                height: 100px;
+                background-color: #65da79;
+                transform: rotate(15deg);
+            }
+
+            .nodes {
+                position: absolute;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background-color: #4886d2;
+                cursor: pointer;
+            }
+
+            .topLeft,
+            .topCenter,
+            .topRight {
+                top: -6px;
+            }
+
+            .topLeft {
+                left: -6px;
+            }
+
+            .topCenter {
+                left: 50%;
+                margin-left: -6px;
+            }
+
+            .topRight {
+                right: -6px;
+            }
+
+            .rightCenter {
+                right: -6px;
+                top: 50%;
+                margin-top: -6px;
+            }
+
+            .bottomRight,
+            .bottomCenter,
+            .bottomLeft {
+                bottom: -6px;
+            }
+
+            .bottomRight {
+                right: -6px;
+            }
+
+            .bottomCenter {
+                left: 50%;
+                margin-left: -6px;
+            }
+
+            .bottomLeft {
+                left: -6px;
+            }
+
+            .leftCenter {
+                top: 50%;
+                margin-top: -6px;
+                left: -6px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <div id="drag" ref="drag" :style="dragStyle">
+                <div
+                    v-for="item in nodes"
+                    class="nodes"
+                    :class="item"
+                    @mousedown="mouseDown($event, item)"
+                ></div>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+        <script type="module">
+            import rotateResize from './rotateResize.js';
+            /* async function init() {
+                rotateResize = await import('./rotateResize.js')
+            } */
+            console.log('输出', rotateResize);
+            // 元素初始中心点
+            let cpoint = { x: 0, y: 0 }; // 元素中心点坐标
+            let symmetry = { x: 0, y: 0 }; // 点击位置相对于中心点的对称点坐标
+            let newCenterPoint = { x: 0, y: 0 }; //拖动时根据当前鼠标位置和之前的对称点，计算新的中心点
+            let rotate = 15; // 旋转角度
+            function angleToRadian(angle) {
+                return (angle * Math.PI) / 180;
+            }
+            var app = new Vue({
+                el: '#app',
+                data: {
+                    startLeft: 0, // 元素拖拽时的初始偏移
+                    startTop: 0,
+                    startWidth: 0, // 元素拖拽时的初始尺寸
+                    startHeight: 0,
+                    startX: 0, // 记录鼠标按下时的初始坐标
+                    startY: 0,
+                    moveX: 0, // 实时位置
+                    moveY: 0,
+                    dragType: '', //拖拽的节点类型
+                    dragStyle: {
+                        //拖拽元素样式
+                        left: '200px',
+                        top: '200px',
+                        width: '100px',
+                        height: '100px'
+                    },
+                    nodes: [
+                        'topLeft',
+                        'topCenter',
+                        'topRight',
+                        'rightCenter',
+                        'bottomRight',
+                        'bottomCenter',
+                        'bottomLeft',
+                        'leftCenter'
+                    ]
+                },
+                mounted() {
+                    document.addEventListener('mouseup', this.mouseUp);
+                },
+                methods: {
+                    // 求两点之间的中点坐标
+                    getCenterPoint(p1, p2) {
+                        newCenterPoint.x = p1.x + (p2.x - p1.x) / 2;
+                        newCenterPoint.y = p1.y + (p2.y - p1.y) / 2;
+                    },
+
+                    // 获取元素中心点
+                    getEleCenter(left, top, width, height) {
+                        // 记录中心点
+                        cpoint.x = left + width / 2;
+                        cpoint.y = top + height / 2;
+                    },
+                    // 获取相对于元素中心的对称点
+                    getSymmetry(x, y) {
+                        // 记录对称点坐标
+                        symmetry.x = cpoint.x - (x - cpoint.x);
+                        symmetry.y = cpoint.y - (y - cpoint.y);
+                    },
+                    mouseDown(e, type) {
+                        this.dragType = type;
+                        this.startX = e.pageX;
+                        this.startY = e.pageY;
+
+                        let dom = this.$refs.drag;
+                        this.startLeft = dom.offsetLeft;
+                        this.startTop = dom.offsetTop;
+                        this.startWidth = dom.offsetWidth;
+                        this.startHeight = dom.offsetHeight;
+
+                        // 计算各项初始数据
+                        this.getEleCenter(
+                            this.startLeft,
+                            this.startTop,
+                            this.startWidth,
+                            this.startHeight
+                        );
+                        this.getSymmetry(this.startX, this.startY);
+
+                        document.addEventListener('mousemove', this.mouseMove);
+                        document.addEventListener('mouseup', this.mouseUp);
+                    },
+                    mouseUp() {
+                        this.dragType = '';
+                        document.removeEventListener(
+                            'mousemove',
+                            this.mouseMove
+                        );
+                        document.removeEventListener('mouseup', this.mouseUp);
+                    },
+                    mouseMove(e) {
+                        this.moveX = e.pageX;
+                        this.moveY = e.pageY;
+                        this.getCenterPoint(
+                            { x: e.pageX, y: e.pageY },
+                            symmetry
+                        );
+                        const diffX = e.pageX - this.startX,
+                            diffY = e.pageY - this.startY;
+
+                        let endLeft = this.startLeft + diffX,
+                            endTop = this.startTop + diffY,
+                            left,
+                            top,
+                            width,
+                            height;
+
+                        //对应节点操作逻辑
+                        let direMap = {
+                            topLeft:'lt',
+                            topCenter:'ct',
+                            topRight:'rt',
+                            rightCenter: 'rm',
+                            bottomRight:'rb',
+                            bottomCenter:'cb',
+                            bottomLeft:'lb',
+                            leftCenter:'lm'
+                        }
+                        let fixedRatio = ['topLeft','topRight','bottomLeft','bottomRight']
+
+                        const resultRect = rotateResize(
+                            direMap[this.dragType],
+                            { x: this.startX, y: this.startY },
+                            { x: e.pageX, y: e.pageY },
+                            {
+                                x: this.startLeft,
+                                y: this.startTop,
+                                w: this.startWidth,
+                                h: this.startHeight,
+                                r: rotate
+                            },
+                            fixedRatio.includes(this.dragType)
+                        );
+                        this.dragStyle = {
+                            left: resultRect.x + 'px',
+                            top: resultRect.y + 'px',
+                            width: resultRect.w + 'px',
+                            height: resultRect.h + 'px'
+                        }
+                    },
+                    // 计算组件新的位移 top left 以及新的组件大小
+                    // x1 = x * cosθ - y * sinθ;
+                    // y1 = x * sinθ - y * cosθ;
+                    calcLeftTop(style = {}, curPositon, pointInfo) {
+                        this.getCenterPoint(
+                            { x: this.moveX, y: this.moveY },
+                            symmetry
+                        );
+                        const newTopLeftPoint =
+                            this.calculateRotatedPointCoordinate(
+                                { x: this.moveX, y: this.moveY },
+                                newCenterPoint,
+                                -rotate
+                            );
+                        const newBottomRightPoint =
+                            this.calculateRotatedPointCoordinate(
+                                symmetry,
+                                newCenterPoint,
+                                -rotate
+                            );
+
+                        const newWidth =
+                            newBottomRightPoint.x - newTopLeftPoint.x;
+                        const newHeight =
+                            newBottomRightPoint.y - newTopLeftPoint.y;
+                        if (newWidth > 0 && newHeight > 0) {
+                            style.width = newWidth;
+                            style.height = newHeight;
+                            style.left = newTopLeftPoint.x;
+                            style.top = newTopLeftPoint.y;
+
+                            return {
+                                w: newWidth,
+                                h: newHeight,
+                                l: newTopLeftPoint.x,
+                                t: newTopLeftPoint.y
+                            };
+                        }
+                    },
+                    calculateRotatedPointCoordinate(point, center, rotate) {
+                        /**
+                         * 旋转公式：
+                         *  点a(x, y)
+                         *  旋转中心c(x, y)
+                         *  旋转后点n(x, y)
+                         *  旋转角度θ                tan ??
+                         * nx = cosθ * (ax - cx) - sinθ * (ay - cy) + cx
+                         * ny = sinθ * (ax - cx) + cosθ * (ay - cy) + cy
+                         */
+
+                        return {
+                            x:
+                                (point.x - center.x) *
+                                    Math.cos(angleToRadian(rotate)) -
+                                (point.y - center.y) *
+                                    Math.sin(angleToRadian(rotate)) +
+                                center.x,
+                            y:
+                                (point.x - center.x) *
+                                    Math.sin(angleToRadian(rotate)) +
+                                (point.y - center.y) *
+                                    Math.cos(angleToRadian(rotate)) +
+                                center.y
+                        };
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

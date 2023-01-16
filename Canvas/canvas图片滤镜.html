@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Canvas图片滤镜</title>
+        <style>
+            #canvas {
+                margin: 0 auto;
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <script>
+            let canvas = document.getElementById('canvas');
+            let ctx = canvas.getContext('2d');
+
+            let image = new Image();
+            image.src = './2.jpg';
+            image.setAttribute('crossOrigin','');
+            image.onload = function () {
+                let width = Math.round(image.width / 4),
+                    height = Math.round(image.height / 4);
+
+                canvas.width = width;
+                canvas.height = height;
+
+                // 将图片绘制到画布中
+                ctx.drawImage(image, 0, 0, width, height);
+                // 获取画布的像素数据
+                let imageData = ctx.getImageData(0, 0, width, height);
+                console.log('输出',imageData);
+                // 处理像素数据
+                imageData = filter(imageData, ctx);
+                // 将处理过的像素数据放回画布
+                ctx.putImageData(imageData, 0, 0);
+            };
+
+            // 滤镜函数 - 红色滤镜
+            function filter(imgData, ctx) {
+                let len = imgData.data.length / 4; // 4个为一个像素
+                for (let i = 0; i < len; i++) {
+                    // imgData.data[i * 4 + 0] = 0;  // 红色值不变
+                    imgData.data[i * 4 + 1] = 0; // 绿色值设置为0
+                    imgData.data[i * 4 + 2] = 0; // 蓝色值设置为0
+                }
+                return imgData;
+            }
+
+            // 滤镜函数 - 灰色滤镜（三色平均值）
+            function filter(imgData, ctx) {
+                let len = imgData.data.length / 4; // 4个为一个像素
+                for (let i = 0; i < len; i++) {
+                    let v =  (imgData.data[i * 4] +  imgData.data[i * 4 +1] + imgData.data[i * 4 +2]) / 3;
+                    imgData.data[i * 4] = v;  // 红色值不变
+                    imgData.data[i * 4 + 1] = v; // 绿色值设置为0
+                    imgData.data[i * 4 + 2] = v; // 蓝色值设置为0
+                }
+                return imgData;
+            }
+
+            // 反转函数 - 反向滤镜（三色与255差值）
+            function filter(imgData, ctx) {
+                let len = imgData.data.length / 4; // 4个为一个像素
+                for (let i = 0; i < len; i++) {
+                    imgData.data[i * 4] = 255 - imgData.data[i * 4];  // 红色值不变
+                    imgData.data[i * 4 + 1] = 255 - imgData.data[i * 4 + 1]; // 绿色值设置为0
+                    imgData.data[i * 4 + 2] = 255 - imgData.data[i * 4 + 2]; // 蓝色值设置为0
+                }
+                return imgData;
+            }
+
+        </script>
+    </body>
+</html>

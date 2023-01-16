@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+	* {
+		margin: 0;
+		padding: 0;
+	}
+	</style>
+</head>
+
+<body>
+	<canvas id="canvas"></canvas>
+	<script>
+	//获取弧度
+	
+	function getRad (degrees) { return (Math.PI / 180) * degrees; }
+
+	// 获取角度
+	function getDeg (rads) { return rads / (Math.PI / 180)  }
+	let canvas = document.querySelector('#canvas');
+	let w = window.innerWidth;
+	let h = window.innerHeight;
+	canvas.width = w;
+	canvas.height = h;
+
+	let ctx = canvas.getContext('2d');
+	console.log(ctx);
+
+	// 三角形
+	ctx.beginPath();
+	ctx.moveTo(300,300);
+	ctx.lineTo(400,300);
+	ctx.lineTo(400,400);
+	ctx.fillStyle="#000";
+	ctx.fill();
+	ctx.closePath();
+
+	// 绘制背景网格
+	let size = 20;
+	ctx.beginPath();
+	// 绘制竖向网线
+	for(let i = 1, len = Math.ceil(w/size); i< len;i++){
+		ctx.moveTo(i*size, 0);
+		ctx.lineTo(i*size, h);
+	}
+	// 绘制横向网线
+	for(let n = 1, len2 =  Math.ceil(h/size); n< len2;n++){
+		ctx.moveTo(0, n*size);
+		ctx.lineTo(w, n*size);
+	}
+	ctx.lineWidth = 1;
+	ctx.strokeStyle = 'rgba(67,193,181,.3)';
+	ctx.stroke();
+
+	// 1.绘制线
+	ctx.beginPath();
+	ctx.moveTo(20,20);
+	ctx.lineTo(200,20);
+	ctx.lineWidth=1.0;
+	ctx.strokeStyle = '#27CDB5';
+	ctx.stroke();
+	ctx.closePath();
+
+	// 2.绘制矩形
+	ctx.fillStyle='#FD8E6F';
+	// 实心矩形
+	ctx.fillRect(20,50,180,180) 
+	
+	// 空心矩形
+	// ctx.strokeRect(20,50,180,180)
+	
+	//清除某个区域的矩形
+	// ctx.clearRect(100,30,50,50)
+	
+	// 3.绘制字体
+	ctx.font = 'Bold 20px Arial';
+	ctx.textAlign = 'left';
+	// 实心字
+	ctx.fillStyle = '#27CDB5';
+	ctx.fillText('Hello World!',220,20)
+	// 空心字
+	ctx.strokeStyle = '#27CDB5';
+	ctx.strokeText('Hello World!',220,40)
+
+	// 4.绘制圆
+	ctx.beginPath();
+	// 实心圆
+	ctx.arc(280, 90, 45, 0, Math.PI*2, true); 
+	ctx.fillStyle = "#43C1B5"; 
+	ctx.fill();
+	// 空心圆
+	ctx.beginPath();
+	ctx.arc(280,190,45,0,Math.PI*2,true);
+	ctx.lineWidth = 1; 
+	ctx.strokeStyle="#43C1B5";
+	ctx.stroke();
+
+	// 5.绘制扇形
+	// 实心扇形
+	ctx.beginPath();
+	ctx.moveTo(430,90);
+	ctx.arc(430, 90, 45, getRad(-30), getRad(30), true);
+	ctx.lineWidth = 1; 
+	ctx.fillStyle="#43C1B5";
+	ctx.closePath();
+	ctx.fill();
+
+	// 空心扇形
+	ctx.beginPath();
+	ctx.moveTo(430,190)
+	ctx.arc(430,190,45,getRad(-30),getRad(30),true);
+	ctx.lineWidth = 1; 
+	ctx.strokeStyle="#43C1B5";
+	ctx.closePath();
+	ctx.stroke();
+
+	// 6.设置渐变 
+	var myGradient = ctx.createLinearGradient(0, 0, 0, 160); 
+	myGradient.addColorStop(0, "#FD8E6F"); 
+	myGradient.addColorStop(1, "#F45F62");
+	ctx.fillStyle = myGradient;
+	ctx.fillRect(500,20,200,200);
+
+	// 7.载入图片
+	/*var img = new Image();
+	img.src = './hmbb.png';
+	img.onload = function(){
+		ctx.drawImage(img,750,20)
+	}*/
+
+	// 8.动画
+	/*var posX = 20,
+    posY = 100;
+	setInterval(function() {
+		ctx.fillStyle = "black";
+	    ctx.fillRect(0,0,canvas.width, canvas.height);
+
+		posX += 1;
+		posY += 0.25;
+
+		ctx.beginPath();
+		ctx.fillStyle = "white";
+
+		ctx.arc(posX, posY, 10, 0, Math.PI*2, true); 
+		ctx.closePath();
+		ctx.fill();
+	}, 30);*/
+
+	// 小球反弹动画
+	/*var posX = 20,
+    posY = 100;
+	var vx = 10, vy = -10, gravity = 1;
+	setInterval(function() {
+		ctx.fillStyle = "black";
+	    ctx.fillRect(0,0,canvas.width, canvas.height);
+	    posX += vx;
+	    posY += vy;
+
+		if (posY > canvas.height * 0.75) {
+	        vy *= -0.6;
+	        vx *= 0.75;
+	        posY = canvas.height * 0.75;
+	    }
+		
+	    vy += gravity;
+		ctx.beginPath();
+		ctx.fillStyle = "white";
+
+		ctx.arc(posX, posY, 10, 0, Math.PI*2, true); 
+		ctx.closePath();
+		ctx.fill();
+	},20);*/
+
+	</script>
+</body>
+
+</html>

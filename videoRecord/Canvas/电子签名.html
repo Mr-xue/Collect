@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>canvas签名</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+            #canvas {
+                width: 375px;
+                height: 667px;
+                margin: 0 auto;
+                outline: 1px solid red;
+            }
+            .btns {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="btns">
+            <button id="reset">重置</button>
+            <button id="save">保存</button>
+        </div>
+        <canvas id="canvas"></canvas>
+
+        <script>
+            let canvas = document.querySelector('#canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let ctx = canvas.getContext('2d');
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round'; // 线条末端添加圆形线帽，减少线条的生硬感
+            ctx.lineJoin = 'round'; // 线条交汇时为原型边角
+            ctx.color = '#000';
+
+            // 利用阴影，消除锯齿
+            ctx.shadowBlur = 1;
+            ctx.shadowColor = '#000';
+
+            canvas.addEventListener('touchstart', function (e) {
+                let t = e.changedTouches[0];
+                ctx.beginPath();
+                ctx.moveTo(t.pageX, t.pageY);
+            });
+            canvas.addEventListener('touchmove', function (e) {
+                let t = e.changedTouches[0];
+                ctx.lineTo(t.pageX, t.pageY);
+                ctx.stroke();
+            });
+            canvas.addEventListener('touchend', function () {
+                ctx.closePath();
+            });
+
+            // 清空、保存
+            document.querySelector('#reset').onclick = function () {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            };
+            document.querySelector('#save').onclick = function () {
+                /* var imgBase64 = canvas.toDataURL();
+                var imgPng = canvas.toDataURL('image/png');
+                var imgJpg = canvas.toDataURL('image/jpeg', 0.8);
+                console.log(imgBase64);
+                console.log('===>');
+                console.log(imgPng);
+                console.log('===>');
+                console.log(imgJpg); */
+
+                canvas.toBlob((blob) => {
+                    const a = document.createElement('a');
+                    document.body.append(a);
+                    a.download = `签名.png`;
+                    a.href = URL.createObjectURL(blob);
+                    a.click();
+                    a.remove();
+                });
+            };
+        </script>
+    </body>
+</html>

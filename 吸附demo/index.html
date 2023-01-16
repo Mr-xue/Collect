@@ -12,13 +12,13 @@
                 height: 100px;
                 background-color: coral;
             }
-            .o1{
+            .o1 {
                 left: 200px;
                 top: 200px;
             }
-            .o2{
-                left: 220px;
-                top: 230px;
+            .o2 {
+                left: 600px;
+                top: 50px;
                 background-color: #5b91ff;
             }
             #drag {
@@ -30,8 +30,10 @@
                 background-color: #34b657;
                 text-align: center;
                 line-height: 100px;
-                color:#fff;
+                color: #fff;
                 font-size: 26px;
+                transform:rotate(30deg);
+                user-select: none;
             }
             .line {
                 position: absolute;
@@ -74,79 +76,68 @@
                 otherY = [200, 250, 300];
             let selfX = [],
                 selfY = [];
-
+            let diffWidth = 0, //旋转后的宽高差
+                diffHeight = 0;
             // 元素初始样式数据
-            let dragData = { left: 220, top: 220 };
-            let pointX = '',
-                pointY = '';
-
+            let dragData = {oriLeft:220, oriTop:220, left: 220, top: 220, w:100, h:100};
             let diff = 10; //吸附距离
 
             function mouseDown(e) {
                 mouseState = true;
                 startX = e.pageX;
                 startY = e.pageY;
-                dragData.left = dragDom.offsetLeft;
-                dragData.top = dragDom.offsetTop;
-
+                // dragData.left = dragDom.offsetLeft;
+                // dragData.top = dragDom.offsetTop;
+                let domInfo = dragDom.getBoundingClientRect();
+                dragData.oriLeft = Math.round(dragDom.offsetLeft);
+                dragData.left = Math.round(domInfo.left);
+                dragData.oriTop = Math.round(dragDom.offsetTop);
+                dragData.top = Math.round(domInfo.top);
+                dragData.w = Math.round(domInfo.width);
+                dragData.h = Math.round(domInfo.height);
+                diffWidth = (dragDom.offsetWidth - dragData.w) / 2;
+                diffHeight = (dragData.h - dragDom.offsetHeight) / 2;
                 // 获取其他元素坐标点
-                getOtherCoord()
+                getOtherCoord();
             }
 
             function mouseMove(e) {
-                // console.log('输出',e);
                 if (mouseState) {
                     let offX = e.pageX - startX,
                         offY = e.pageY - startY;
 
                     // 设置位置
-                    let left = dragData.left + offX,
-                        top = dragData.top + offY;
+                    let left = dragData.oriLeft + offX,
+                        top = dragData.oriTop + offY,
+                        halfWidth = Math.round(dragData.w / 2),
+                        halfHeight = Math.round(dragData.h / 2);
 
                     dragDom.style.left = left + 'px';
                     dragDom.style.top = top + 'px';
 
-                    selfX = [left, left + 50, left + 100];
-                    selfY = [top, top + 50, top + 100];
-                    setPoint();
+                    selfX = [left + diffWidth, left + diffWidth + halfWidth, left+ + diffWidth + dragData.w];
+                    selfY = [top - diffHeight, top - diffHeight + halfHeight, top - diffHeight + dragData.h];
                     createLine();
-                    adsorb();
                 }
             }
             function mouseUp(e) {
                 mouseState = false;
             }
 
-
             // 获取其他元素坐标点
             function getOtherCoord() {
                 let eles = document.querySelectorAll('.other');
-                eles.forEach(item => {
-                    console.log('输出',item);
-                    otherX.push(item.offsetLeft)
-                    otherX.push(item.offsetLeft+50)
-                    otherX.push(item.offsetLeft+100)
+                eles.forEach((item) => {
+                    otherX.push(item.offsetLeft);
+                    otherX.push(item.offsetLeft + 50);
+                    otherX.push(item.offsetLeft + 100);
 
-                    otherY.push(item.offsetTop)
-                    otherY.push(item.offsetTop+50)
-                    otherY.push(item.offsetTop+100)
-                })
-                otherX = Array.from(new Set(otherX))
-                otherY = Array.from(new Set(otherY))
-            }
-            // 获取鼠标拖动方向
-            function setPoint(offX, offY) {
-                if (offX > 0) {
-                    pointX = 'right';
-                } else {
-                    pointX = 'left';
-                }
-
-                if (offY > 0) {
-                    pointY = 'down';
-                } else {
-                    pointY = 'up';
-                }
+                    otherY.push(item.offsetTop);
+                    otherY.push(item.offsetTop + 50);
+                    otherY.push(item.offsetTop + 100);
+                });
+                otherX = Array.from(new Set(otherX));
+                otherY = Array.from(new Set(otherY));
             }
 
             // 创建辅助线
@@ -169,7 +160,8 @@
                         }
                     });
                 });
-                let left = 0,top = 0;
+                let left = 0,
+                    top = 0;
                 if (xline.length) {
                     top = Math.min(...xline);
                 }
@@ -178,36 +170,63 @@
                     left = Math.min(...yline);
                 }
 
-                console.log('输出',selfX,otherX,yline);
+                // console.log('输出', selfX, otherX, yline);
                 $('.line-x').style.top = top + 'px';
                 $('.line-y').style.left = left + 'px';
 
                 //吸附
-                adsorb(left,top)
+                adsorb(left, top);
             }
             // 吸附
-            function adsorb(left,top) {
-                if(left){
-                    console.log('输出',left);
-                    if(Math.abs(selfX[0] - left) <= diff){
-                        dragDom.style.left = left+'px'
-                    }else if(Math.abs(selfX[1] - left) <= diff){
-                        dragDom.style.left = (left - 50) +'px';
-                    }else if(Math.abs(selfX[2] - left) <= diff){
-                        dragDom.style.left = (left - 100) +'px';
+            function adsorb(left, top) {
+                if (left) {
+                    console.log('原始值',left);
+                    // left -= diffWidth;
+                    console.log('输出',left,selfX, selfX[0] - left);
+                    if (Math.abs(selfX[0] - left) <= diff) {
+                        dragDom.style.left = left - diffWidth + 'px';
+                    } else if (Math.abs(selfX[1] - left) <= diff) {
+                        dragDom.style.left = left - diffWidth - dragData.w/2 + 'px';
+                    } else if (Math.abs(selfX[2] - left) <= diff) {
+                        dragDom.style.left = left - diffWidth - dragData.w + 'px';
                     }
                 }
 
-                if(top){
-                    console.log('输出',top);
-                    if(Math.abs(selfY[0] - top) <= diff){
-                        dragDom.style.top = top+'px'
-                    }else if(Math.abs(selfY[1] - top) <= diff){
-                        dragDom.style.top = (top - 50) +'px';
-                    }else if(Math.abs(selfY[2] - top) <= diff){
-                        dragDom.style.top = (top - 100) +'px';
+                if (top) {
+                    // top -= diffHeight;
+                    if (Math.abs(selfY[0] - top) <= diff) {
+                        dragDom.style.top = top + diffHeight + 'px';
+                    } else if (Math.abs(selfY[1] - top) <= diff) {
+                        dragDom.style.top = top + diffHeight - dragData.h/2 + 'px';
+                    } else if (Math.abs(selfY[2] - top) <= diff) {
+                        dragDom.style.top = top + diffHeight - dragData.h + 'px';
                     }
                 }
+            }
+
+            /**
+             *
+             * 以下是工具类
+             *
+             */
+            // 解析dom元素的旋转角度
+            function getRotateStyle(dom) {
+                let matrix = getComputedStyle(dom).transform;
+                // 判断之前没设置过角度，则设置为0deg的矩阵
+                matrix = matrix == 'none' ? 'matrix(1, 0, 0, 1, 0, 0)' : matrix;
+                let values = matrix.split('(')[1].split(')')[0].split(',');
+                let a = values[0];
+                let b = values[1];
+                let c = values[2];
+                let d = values[3];
+                let scale = Math.sqrt(a * a + b * b);
+                let angle = Math.round(Math.atan2(b, a) * (180 / Math.PI));
+                return angle;
+            }
+
+            // 角度转弧度
+            function angle2radian(angle) {
+                return (angle * Math.PI) / 180;
             }
         </script>
     </body>

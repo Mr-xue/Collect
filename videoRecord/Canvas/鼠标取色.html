@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{margin: 0;padding: 0;}
+        #wrap{
+            position: relative;
+            width: 375px;
+            height: 742px;
+            margin: 0 auto;
+        }
+        #canvas{
+            display: block;
+            margin: 20px auto 0;
+            outline:1px solid coral;
+        }
+        #zoom{ 
+            position: absolute;
+            border-radius:50%;
+            border:1px solid #000;
+            /* display: none; */
+            /* background-color: rgba(255,255,255,.5); */
+        }
+    </style>
+</head>
+<body>
+    <div id="wrap">
+        <canvas id="canvas"></canvas>
+        <canvas id="zoom"></canvas>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded',()=>{
+
+            let canvas = document.getElementById('canvas'),
+                ctx = canvas.getContext('2d');
+            canvas.width = 375,
+            canvas.height = 724;
+
+            // 放大镜canvas
+            let zCanvas = document.getElementById('zoom'),
+                zctx = zCanvas.getContext('2d');
+            let zw = 110, zh = 110; //放大镜尺寸
+            zCanvas.width = zw,
+            zCanvas.height = zh;
+            
+            
+            let img = new Image(),
+                imgW, imgH;
+            img.src = './color-img.jpg';
+            img.onload = () => {
+                imgW = img.width;
+                imgH = img.height;
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+            }
+    
+            // 绑定鼠标事件
+            canvas.addEventListener('mousedown', cDown,false);
+            canvas.addEventListener('mousemove', cMove,false);
+
+            // 鼠标按下方法
+            function cDown(e){
+                let offX = e.offsetX,
+                    offY = e.offsetY,
+                    px = e.pageX,
+                    py = e.pageY;
+
+                console.log(offX,offY);
+                setZoomPosi(offX,offY,px,py)
+            }
+            // 鼠标移动方法
+            function cMove(e){
+                let offX = e.offsetX,
+                    offY = e.offsetY;
+
+                setZoom(offX,offY)
+            }
+
+            // 设置放大镜位置及图像绘制
+            function setZoom(ox, oy) {
+                // 设置放大镜位置
+                let style = `left:${ox}px;top:${oy}px;`
+                zCanvas.style.cssText = style;
+
+                // 放大镜图片放大比例
+                let scale = 3;
+
+                // 根据鼠标在canvas中位置所占原图百分比计算出元素中的偏移数据
+                let l = (ox / canvas.width) * imgW,
+                    t = (oy / canvas.height) * imgH;
+
+                // zctx.clearRect(0, 0, zw, zh);
+                // 向放大镜内绘制图像
+                zctx.drawImage(
+                    img, 
+                    l - (zw/2/scale),
+                    t - (zh/2/scale),
+                    zw/scale,
+                    zh/scale,
+                    0, 0,
+                    zw, zh
+                )
+
+                // 在放大镜内绘制网格（坐标偏移0.5，解决线模糊的问题）
+                for(let x = 0; x < zw; x+=10) {
+                    zctx.beginPath();
+                    zctx.moveTo(x-0.5, 0-0.5);
+                    zctx.lineTo(x-0.5, zh-0.5);
+                    zctx.strokeStyle = '#a7a7a7';
+                    zctx.strokeWidth = '1px';
+                    zctx.stroke();
+                }
+                for(let y = 0; y < zh; y+=10) {
+                    zctx.beginPath();
+                    zctx.moveTo(0-0.5, y-0.5);
+                    zctx.lineTo(zw-0.5, y-0.5);
+                    zctx.strokeStyle = '#a7a7a7';
+                    zctx.strokeWidth = '1px';
+                    zctx.stroke();
+                }
+
+                // 绘制放大镜中心红色小框
+                zctx.beginPath()
+                zctx.rect(50-0.5,50-0.5,10,10)
+                zctx.strokeStyle = 'red';
+                zctx.strokeWidth = '1px';
+                zctx.stroke()
+            }
+        })
+    </script>
+</body>
+</html>
