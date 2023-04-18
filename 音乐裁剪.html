@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐裁剪示例</title>
+    <style>
+        *{margin: 0;padding: 0;}
+        .wrap{margin: 0 auto;width: 600px;}
+        .container{
+            position: relative;
+            height: 34px;
+            border-top:2px solid coral;
+            margin-top: 30px;
+        }
+        .poa{position: absolute;}
+        .drag-wrap{position: absolute;height: 100%;width: 100%;background-color: #E6EDFD;}
+        .d-left{left: 0;left: -8px;}
+        .d-right{right:0;right: -8px;}
+        .drag-point{
+            width: 8px;
+            height: 70%;
+            bottom: 0;
+            cursor: pointer;
+            background-color: #2472E6;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div id="info">
+            起止时间：
+            <span class="start-time">00:00</span>
+            ~
+            <span class="end-time">00:20</span>
+
+            截取时长：
+            <span class="cut-time">100秒</span>
+        </div>
+
+        <!-- 拖动容器 -->
+        <div class="container">
+            <div class="drag-wrap poa">
+                <span class="poa drag-point d-left"></span>
+                <span class="poa drag-point d-right"></span>
+            </div>
+        </div>
+    </div>
+    <script>
+        const $ = (selector) => document.querySelector(selector);
+        const addEvent = (selector, event, func) => {
+            selector.addEventListener(event, func)
+        }
+
+       /*  document.addEventListener('DOMContentLoaded',function() {
+            document.addEventListener()
+        }) */
+        let startX, 
+            moveX,
+            pointState = false,
+            pointStyle = {left:0};
+
+        addEvent(document, 'DOMContentLoaded', function() {
+            console.log('输出');
+            
+            addEvent($('.drag-point'),'mousedown', pointMouseDown)
+            addEvent(document,'mousedown', mouseMove)
+            addEvent(document,'mouseup', mouseUp)
+
+            function pointMouseDown(e) {
+                console.log('输出',e.target.offsetLeft);
+                e.stopPropagation();
+                startX = e.pageX;
+                pointState = true;
+            }
+            function mouseMove(e) {
+                moveX = e.pageX;
+
+                if(pointState) {
+                    console.log('输出',e.target);
+                }
+            }
+            function mouseUp() {
+                pointState = false;
+            }
+
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>图片上传</title>
+    </head>
+    <body>
+        <center>
+            <div class="img-view"></div>
+            <input id="file" type="file" multiple />
+        </center>
+
+        <script>
+            let $ = (selector) => document.querySelector(selector);
+            let input = $('#file');
+
+            input.onchange = function () {
+                let files = this.files;
+                // console.log('输出', files);
+                /*   const fileList = Object.entries(files).map(([_, file]) => {
+                    // console.log('输出',_,file);
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = (e) => {
+                        file.preview = e.target.result;
+                    };
+                    return file;
+                }); */
+
+                /*
+                 *  file中的preview存的就是可以预览使用url,如果你需要保证fileList的顺序,
+                 *  请不要使用这种方式,你可以采用索引的方式存储,来保证它的顺序一致性
+                 */
+                /*  console.log(fileList);
+                for(let f of fileList) {
+                    console.log('输出',f.preview);
+                    let tpl = `<img class="preview" src=${f.preview}}/>`
+                    $('.img-view').append(tpl)
+                } */
+
+                for(let f of files) {
+                    const preview = window.URL.createObjectURL(f);
+                    let img = document.createElement('img');
+                    img.src = preview;
+                    img.width = 100;
+                    img.onload = function () {
+                        window.URL.revokeObjectURL(preview);
+                    };
+                    $('.img-view').appendChild(img);
+                }
+            };
+        </script>
+    </body>
+</html>

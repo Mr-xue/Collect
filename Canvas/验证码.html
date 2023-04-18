@@ -38,6 +38,34 @@
     </div>
 
     <script>
+        const drawPath  = (ctx, x, y, operation) => {
+            let l = 42, r = 9;
+            const PI = Math.PI;
+           /*  ctx.beginPath()
+            ctx.moveTo(100, 150)
+            ctx.arc(100,150, 50, 0.72 * PI, 2.26 * PI, false)
+            ctx.lineTo(100 + l, 150) */
+
+            ctx.beginPath()
+            ctx.moveTo(x, y)
+            ctx.arc(x + l / 2, y - r + 2, r, 0.72 * PI, 2.26 * PI)
+            ctx.lineTo(x + l, y)
+            ctx.arc(x + l + r - 2, y + l / 2, r, 1.21 * PI, 2.78 * PI)
+            ctx.lineTo(x + l, y + l)
+            ctx.lineTo(x, y + l)
+            // anticlockwise为一个布尔值。为true时，是逆时针方向，否则顺时针方向
+            ctx.arc(x + r - 2, y + l / 2, r + 0.4, 2.76 * PI, 1.24 * PI, true)
+            ctx.lineTo(x, y)
+            ctx.lineWidth = 2
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'
+            ctx.stroke()
+            ctx.globalCompositeOperation = 'destination-over'
+            
+            // 判断是填充还是裁切, 裁切主要用于生成图案滑块
+            operation === 'fill'? ctx.fill() : ctx.clip()
+        }
+
         document.addEventListener('DOMContentLoaded',function() {
             const canvas = document.querySelector('#canvas'),
                 ctx = canvas.getContext('2d');
@@ -49,6 +77,9 @@
             let img = new Image();
             img.src = './2.jpg';
             img.onload = function() {
+                // drawPath(ctx,200,150,'fill')
+
+                 // 绘制底图
                 ctx.drawImage(img,0,0,360,215)
 
                 //计算随机的拼图圆心位置（直径50px的圆形）,边界留白50
@@ -67,6 +98,7 @@
                 ctx.arc(x, y, 25, 0, 2 * Math.PI)
                 ctx.fillStyle = 'rgba(0,0,0,.6)';
                 ctx.fill();
+                // ctx.globalCompositeOperation = 'destination-over';
             }
 
             // 拖动
