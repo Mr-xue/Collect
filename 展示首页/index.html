@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Document</title>
+        <title>展示首页</title>
         <link rel="stylesheet" href="./css/atropos.css" />
         <link rel="stylesheet" href="./css/index.css" />
         <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -23,42 +23,49 @@
                     <span>I</span>
                 </h3>
             </div>
-        </div>
-
-        <!-- 底部不规则背景 -->
-        <div class="page-bg">
-            <div class="bg-com bg-1"></div>
-            <div class="bg-com bg-2"></div>
-            <div class="bg-com bg-3"></div>
-            <div class="bg-com bg-4"></div>
-        </div>
-
-        <!-- 分类 -->
-       <!--  <div class="lang">
-            <div class="r-wrap">
-                <img class="web" src="./imgs/web.png" alt="web"></img>
-                <img class="ios" src="./imgs/ios.png" alt="ios"></img>
-                <img class="android" src="./imgs/android.png" alt="android"></img>
-                <img class="php" src="./imgs/php.png" alt="php"></img>
+            <!-- 底部不规则背景 -->
+            <div class="page-bg">
+                <div class="bg-com bg-1"></div>
+                <div class="bg-com bg-2"></div>
+                <div class="bg-com bg-3"></div>
+                <div class="bg-com bg-4"></div>
             </div>
-        </div> -->
 
-        <!-- main Atropos container (required), add your custom class here -->
-        <div class="atropos my-atropos">
-            <!-- scale container (required) -->
-            <div class="atropos-scale">
-                <!-- rotate container (required) -->
-                <div class="atropos-rotate">
-                    <!-- inner container (required) -->
-                    <div class="atropos-inner">
-                    <!-- put your custom content here -->
-                        <img class="web" src="./imgs/web.png" alt="web"></img>
-                        <img class="ios" src="./imgs/ios.png" alt="ios"></img>
-                        <img class="android" src="./imgs/android.png" alt="android"></img>
-                        <img class="php" src="./imgs/php.png" alt="php"></img>
+            <!-- 分类 -->
+            <div class="atropos my-atropos">
+                <!-- scale container (required) -->
+                <div class="atropos-scale">
+                    <!-- rotate container (required) -->
+                    <div class="atropos-rotate">
+                        <!-- inner container (required) -->
+                        <div class="atropos-inner">
+                            <img class="web" @click="showList('web')" src="./imgs/web.png" alt="web"></img>
+                            <img class="ios" @click="showList('ios')" src="./imgs/ios.png" alt="ios"></img>
+                            <img class="android" @click="showList('android')" src="./imgs/android.png" alt="android"></img>
+                            <img class="php" @click="showList('php')" src="./imgs/php.png" alt="php"></img>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- 列表 -->
+            <Transition name="slide">
+                <div class="article-list" v-show="listType">
+                    <div class="a-back" @click="listType = ''">></div>
+                    <div class="a-list">
+                        <a href="" target="_blank">1. Vue3+ESLint格式化配置 - 张三</a>
+                        <a href="">2. Vue3+ESLint格式化配置 - 张三</a>
+                        <a href="">3. Vue3+ESLint格式化配置 - 张三</a>
+                        <a href="">4. Vue3+ESLint格式化配置 - 张三</a>
+                        <a href="">5. Vue3+ESLint格式化配置 - 张三</a>
+                        <a href="">6. Vue3+ESLint格式化配置 - 张三</a>
+                        <a href="">7. Vue3+ESLint格式化配置 - 张三</a>
+                        <a href="">8. Vue3+ESLint格式化配置 - 张三</a>
+                        <a href="">9. Vue3+ESLint格式化配置 - 张三</a>
+                        <a href="">10. Vue3+ESLint格式化配置 - 张三</a>
+                    </div>
+                </div>
+            </Transition>
         </div>
 
 
