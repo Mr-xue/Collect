@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>stroke</title>
+        <script src="./pixi.js"></script>
+        <!-- <script src="./pixi-filters.js"></script> -->
+        <script src="https://cdn.jsdelivr.net/npm/pixi-filters@latest/dist/browser/pixi-filters.min.js"></script>
+    </head>
+    <body>
+        <input
+            type="range"
+            min="1"
+            max="60"
+            value="2"
+            
+            oninput="change(this)"
+        />
+        <script>
+            let app = new PIXI.Application({ width: 1280, height: 854 });
+            document.body.appendChild(app.view);
+
+            // 异步加载图片,并置入舞台
+            // let sprite = PIXI.Sprite.from('./imgs/tree.png');
+            let sprite = PIXI.Sprite.from('./imgs/people.png');
+            // let sprite = PIXI.Sprite.from('./imgs/p1.png');
+            // let sprite = PIXI.Sprite.from('./imgs/demo.png');
+            sprite.width = 800;
+            sprite.height = 800;
+            // f1：描边滤镜 | f2：阴影滤镜
+            let f1 = new PIXI.filters.OutlineFilter(2, 'coral', 0.5),
+                f2 = new PIXI.filters.DropShadowFilter({
+                    blur:6,
+                    quality:3,
+                    alpha:.5,
+                    offset:{
+                        x:10,
+                        y:10
+                    },
+                    color:'#fff'
+                })
+            sprite.filters = [f1,f2];
+
+            app.stage.addChild(sprite);
+
+            // 修改描边宽度
+            function change(e) {
+                console.log('输出', e.value);
+                let v = e.value;
+                sprite.filters = [
+                    // 参数：轮廓大小，颜色，轮廓质量，透明度
+                    new PIXI.filters.OutlineFilter(v, 'coral', .9, 1), f2
+                ];
+            }
+        </script>
+    </body>
+</html>

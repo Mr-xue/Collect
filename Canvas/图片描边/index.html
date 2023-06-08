@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>图片描边</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            canvas {
+                display: block;
+                margin: 20px auto;
+                outline: 1px solid teal;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // 获取图片相关信息
+                const path = './imgs/p2.webp';
+                const img = new Image();
+                img.src = path;
+                let imgWidth, imgHeight;
+                img.onload = () => {
+                    imgWidth = img.width;
+                    imgHeight = img.height;
+                    img.crossOrigin = 'Anonymous';
+                    console.log('图片尺寸', imgWidth, imgHeight);
+
+                    draw(imgWidth, imgHeight, 'coral', 20);
+                };
+
+                // 画布相关操作
+                function draw(w, h, borderColor, borderWidth) {
+                    let zoom = 1.5; //画布相对于原图的缩放尺寸
+                    canvas.width = w / zoom;
+                    canvas.height = h / zoom;
+                    /**
+                     *   平移图像时，8向
+                     *   -------------------------
+                     *   |-1, -1 | 0, -1 | 1, -1 |
+                     *   |-1, 0  |       | 1, 0  |
+                     *   |-1, 1  | 0, 1  | 1, 1  |
+                     *   -------------------------
+                     *
+                     */
+                    const dArr = [
+                        -1, -1, 0, -1, 1, -1, -1, 0, 1, 0, -1, 1, 0, 1, 1, 1
+                    ]; // offset array
+
+                    for (let i = 0; i < dArr.length; i += 2) {
+                        ctx.drawImage(
+                            img,
+                            dArr[i] * borderWidth,
+                            dArr[i + 1] * borderWidth,
+                            canvas.width,
+                            canvas.height
+                        );
+                    }
+
+                    // 设置合成操作类型：source-in新图形只在新图形和目标画布重叠的地方绘制。其他的都是透明的。
+                    ctx.globalCompositeOperation = 'source-in';
+                    // 填充描边色
+                    ctx.fillStyle = borderColor;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // 添加原图
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    // resolve(canvas.toDataURL());
+                }
+            });
+        </script>
+    </body>
+</html>

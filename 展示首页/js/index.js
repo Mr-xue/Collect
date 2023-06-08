@@ -4,7 +4,7 @@ createApp({
     data() {
         return {
             pageWidth: 0, //页面宽度
-            listType:'web', 
+            listType:'',
         };
     },
     mounted() {

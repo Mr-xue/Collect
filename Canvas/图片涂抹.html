@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>canvas图片涂抹</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            #demo {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden;
+            }
+            .line {
+                width: 2px;
+                height: 100vh;
+                margin: 0 50px;
+                background-color: coral;
+            }
+            .canvas {
+                width: 360px;
+                height: 360px;
+                outline: 1px solid skyblue;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="demo">
+            <canvas id="before" class="canvas"></canvas>
+            <div class="line"></div>
+            <canvas id="after" class="canvas"></canvas>
+        </div>
+
+        <script>
+            const $ = (sec) => document.querySelector(sec);
+            const c1 = $('#before'),
+                c2 = $('#after');
+                c1.width = 360;
+                c1.height = 360;
+                c2.width = 360;
+                c2.height = 360;
+
+            const ctx1 = c1.getContext('2d'),
+                ctx2 = c2.getContext('2d');
+
+            let img = new Image();
+            img.src = './suolong.jpeg';
+            img.onload = () => {
+                ctx1.drawImage(img, 0,0);
+            }
+        </script>
+    </body>
+</html>
