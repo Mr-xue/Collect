@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            #canvas {
+                margin: auto;
+                display: block;
+                outline: 1px solid teal;
+            }
+            canvas{
+                background: #e3e7e9;
+                background-image: linear-gradient(45deg, #f6fafc 25%, transparent 0), linear-gradient(45deg, transparent 75%, #f6fafc 0), linear-gradient(45deg, #f6fafc 25%, transparent 0), linear-gradient(45deg, transparent 75%, #f6fafc 0);
+                background-position: 0 0, 12px 12px, 12px 12px, 24px 24px;
+                background-size: 24px 24px;
+            }
+            .c-wrap{
+                display: flex;
+                justify-content: center;
+            }
+            .tools{
+                display: flex;
+                justify-content: center;
+                padding: 15px;
+            }
+            button{
+                margin:0 8px;
+            }
+            .line{
+                width: 2px;
+                background-color: gainsboro;
+                margin: 0 30px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="tools">
+            <button onclick="recover()">恢复</button>
+            <button onclick="eraser()">擦除</button>
+            <button id="save">保存</button>
+        </div>
+        <div class="c-wrap">
+            <canvas id="inputCanvas"></canvas>
+            <div class="line"></div>
+            <canvas id="outputCanvas"></canvas>
+        </div>
+
+
+        <script type="module" src="./index.js"></script>
+    </body>
+</html>

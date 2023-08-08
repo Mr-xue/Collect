@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <script src="https://cdn.hunbei.com/jquery.min.js"></script>
+    </head>
+    <body>
+        <div
+            style="
+                position: relative;
+                border: 1px solid black;
+                width: 400px;
+                height: 400px;
+            "
+        >
+            <img src="../suolong.jpeg" style="position: absolute; z-order: 1" />
+            <canvas
+                id="canvas"
+                width="400"
+                height="400"
+                style="position: absolute; z-order: 2; opacity: 0.25"
+            ></canvas>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var canvas = document.getElementById('canvas');
+                var ctx = canvas.getContext('2d');
+                var canvasPos = canvas.getBoundingClientRect();
+
+                $(canvas).mousedown(mouseDown);
+                $(canvas).mouseup(mouseUp);
+                $(canvas).mousemove(mouseMove);
+
+                var prevPos = null;
+
+                function mouseDown(e) {
+                    prevPos = getCursorPosition(e);
+                }
+
+                function mouseUp(e) {
+                    prevPos = null;
+                }
+
+                function mouseMove(e) {
+                    var pos, i;
+
+                    if (!prevPos) {
+                        return;
+                    }
+
+                    pos = getCursorPosition(e);
+
+                    ctx.strokeStyle = 'rgb(0, 255, 0)';
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.lineWidth = 15;
+                    ctx.beginPath();
+                    ctx.moveTo(prevPos.x, prevPos.y);
+                    ctx.lineTo(pos.x, pos.y);
+                    ctx.stroke();
+
+                    prevPos = pos;
+                }
+
+                function getCursorPosition(e) {
+                    return {
+                        x: e.clientX - canvasPos.left,
+                        y: e.clientY - canvasPos.top
+                    };
+                }
+            });
+        </script>
+    </body>
+</html>
