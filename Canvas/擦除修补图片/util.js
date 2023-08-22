@@ -1,41 +1,55 @@
-/** 修补渐变开始的颜色 */
-export const REPAIR_POINT_INNER_COLOR = 'rgba(119,106,230,1)';
-/** 修补渐变结束的颜色 */
-export const REPAIR_POINT_OUTER_COLOR = 'rgba(119,106,230,0)';
-/** 擦除渐变开始的颜色 */
-export const ERASE_POINT_INNER_COLOR = 'rgba(255,255,255,1)';
-/** 擦除结束的颜色 */
-export const ERASE_POINT_OUTER_COLOR = 'rgba(255,255,255,0)';
-/** 径向渐变开始圆形的半径 */
-export const GRADIENT_INNER_RADIUS = 0;
-/** 0° */
-export const ZERO_DEGREES = 0;
-/** 360° */
-export const ONE_TURN_DEGREES = Math.PI * 2;
-/** 渐变开始的偏移值 */
-export const GRADIENT_BEGIN_OFFSET = 0;
-/** 渐变结束的偏移值 */
-export const GRADIENT_END_OFFSET = 1;
+import {LINE_COLOR, LINE_OPACITY, LINE_WIDTH} from './options.js';
 
-export function refresh(ctx, paths, drawImg) {
-    // Clear canvas and draw the cat.
+/**
+ *
+ * 设置擦除线条的样式
+ * @param {CanvasRenderingContext2D} ctx - 画布上下文
+ */
+function setLineStyle(ctx) {
+    ctx.globalAlpha = LINE_OPACITY;
+    ctx.strokeStyle = LINE_COLOR;
+    ctx.lineWidth = LINE_WIDTH;
+    ctx.lineCap = 'round'; // 线条末端添加圆形线帽，减少线条的生硬感
+    ctx.lineJoin = 'round'; // 线条交汇时为原型边角
+    // 利用阴影，消除锯齿
+    ctx.shadowBlur = 1;
+    ctx.shadowColor = 'rgb(235,55,57)';
+}
+
+/**
+ * 刷新指定画布
+ *
+ * @param {CanvasRenderingContext2D} ctx - 画布的渲染上下文
+ * @param {Array} paths - 要在画布上绘制的路径的数组
+ * @param {HTMLImageElement} drawImg - 要在画布上绘制的图像
+ * @param {String} model - 要设置的全局合成操作
+ */
+export function refresh(ctx, paths, drawImg, model) {
+    // 清空画布
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    if (drawImg){
-        ctx.drawImage(drawImg, 0, 0);
-    }
+    ctx.globalCompositeOperation = model;
 
-    for (var i=0; i<paths.length; ++i) {
+    // 离屏绘制
+    const offscreenCanvas = document.createElement('canvas');
+    const offCtx = offscreenCanvas.getContext('2d');
+    offscreenCanvas.width = ctx.canvas.width;
+    offscreenCanvas.height = ctx.canvas.height;
+    offCtx.drawImage(drawImg, 0, 0);
+
+    for (var i = 0; i < paths.length; ++i) {
         let path = paths[i];
 
-        if (path.length<1){
+        if (path.length < 1){
             continue; // Need at least two points to draw a line.
         }
 
-        ctx.beginPath();
-        ctx.moveTo(path[0].x, path[0].y);
-        for (let j=1; j<path.length; ++j){
-            ctx.lineTo(path[j].x, path[j].y);
+        offCtx.beginPath();
+        setLineStyle(offCtx);
+        offCtx.moveTo(path[0].x, path[0].y);
+        for (let j = 1; j < path.length; ++j){
+            offCtx.lineTo(path[j].x, path[j].y);
         }
-        ctx.stroke();
+        offCtx.stroke();
     }
+    ctx.drawImage(offscreenCanvas,0,0)
 }

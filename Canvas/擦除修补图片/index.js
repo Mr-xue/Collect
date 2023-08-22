@@ -1,8 +1,9 @@
 import { refresh } from './util.js';
+
 // 设置擦除、修补模式
 let model = 'source-over';
 function recover() {
-    model = 'lighter';
+    model = 'source-over';
 }
 window.eraser = function () {
     model = 'destination-out';
@@ -39,18 +40,16 @@ document.addEventListener('DOMContentLoaded', function () {
     let paths = [];
     function startDrawing(e) {
         paths.push([{x: e.offsetX, y:e.offsetY}])
-        // ctx.globalCompositeOperation = model;
+        ctx.globalCompositeOperation = model;
 
         isDrawing = true;
-        ctx.strokeStyle = 'rgba(235,55,57,.5)';
+        // 设置线条样式
+        ctx.strokeStyle = 'rgba(235,55,57,.3)';
         ctx.lineWidth = 10;
         ctx.lineCap = 'round'; // 线条末端添加圆形线帽，减少线条的生硬感
         ctx.lineJoin = 'round'; // 线条交汇时为原型边角
-        // 利用阴影，消除锯齿
-        ctx.shadowBlur = 1;
+        ctx.shadowBlur = 1; // 利用阴影，消除锯齿
         ctx.shadowColor = 'rgb(235,55,57)';
-        // ctx.beginPath();
-        // ctx.moveTo(e.offsetX, e.offsetY);
 
         draw(e);
     }
@@ -64,9 +63,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!isDrawing) return;
         paths[paths.length - 1].push({ x: e.offsetX, y: e.offsetY });
 
-        refresh(ctx, paths, img);
-      /*   ctx.lineTo(e.offsetX, e.offsetY);
-        ctx.stroke(); */
+        refresh(ctx, paths, img, model); // 重绘源画布
+        refresh(outCtx, paths, img, model); // 重绘目标画布
 
     }
     // 复合模式
