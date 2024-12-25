@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>拖拽替换图片demo</title>
+        <link rel="stylesheet" href="./index.css" />
+        <script src="./vue3.js"></script>
+    </head>
+    <body>
+        <div id="app">
+            <h2 class="title">拖拽替换图片</h2>
+
+            <div class="main">
+                <div class="list-wrap left">
+                    <div class="tit">素材区</div>
+                    <ul>
+                        <li class="list" v-for="item in imgs" ref="list">
+                            <img :src="item" alt="" class="pic" />
+                        </li>
+                    </ul>
+                </div>
+                <div class="list-wrap right">
+                    <div class="tit">拖放区</div>
+                    <ul>
+                        <li v-for="item in rightList">
+                            <img :id="item.id" :src="item.src" alt="" class="right-pic pic" />
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <script type="module">
+            const { createApp, ref, nextTick, onMounted } = Vue;
+
+            createApp({
+                setup() {
+                    const message = ref('Hello vue!');
+                    // 素材列表
+                    const imgs = ref([
+                        new URL('./imgs/sl.jpeg', import.meta.url).href,
+                        new URL('./imgs/lf.jpeg', import.meta.url).href,
+                        new URL('./imgs/nm.jpeg', import.meta.url).href,
+                        new URL('./imgs/l.jpeg', import.meta.url).href
+                    ]);
+
+                    // 编辑区列表
+                    const rightList = ref([
+                        {
+                            id: 1,
+                            src: new URL('./imgs/sl.jpeg', import.meta.url).href
+                        }
+                    ]);
+
+                    onMounted(() => {
+                        const list = document.querySelectorAll('.list');
+
+                        list.forEach((item) => {
+                            item.ondragstart = (e) => {
+                                e.dataTransfer.dropEffect = "copy";
+                                var img = new Image();
+                                img.src = "./imgs/l.jpeg";
+                                e.dataTransfer.setDragImage(img, 10, 10);
+                                e.dataTransfer.setData('text/plain', e.target.src);
+                                console.log('输出',e);
+                            };
+                        });
+
+                        const rightPic = document.querySelectorAll('.right-pic');
+
+                        rightPic.forEach((item) => {
+                            item.ondragover = (e) => {
+                                console.log('输出',111);
+                                e.target.style.filter = 'brightness(.6)';
+                                e.preventDefault();
+                            };
+                            item.ondrop = (e) => {
+                                const src = e.dataTransfer.getData('text/plain');
+                                e.target.src = src;
+                                e.preventDefault();
+                            };
+                        });
+
+                        // 右侧拖放时间
+                        document.querySelector('.right').ondrop = (e) => {
+                            e.preventDefault();
+                            const src = e.dataTransfer.getData('text/plain');
+                           console.log('输出地址',src);
+                           rightList.value.push({
+                               id: rightList.length+1,
+                               src:src
+                           })
+                        }
+                        document.querySelector('.right').ondragover = (e) => {
+                            e.preventDefault();
+
+                        }
+                    });
+
+                    return {
+                        imgs,
+                        rightList,
+                        message
+                    };
+                }
+            }).mount('#app');
+        </script>
+    </body>
+</html>

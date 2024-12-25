@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>拖拽替换图片demo</title>
+        <script src="./vue3.js"></script>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+            .title {
+                text-align: center;
+                padding: 30px 0;
+            }
+            .main {
+                display: flex;
+                justify-content: center;
+            }
+            .list-wrap {
+                flex-shrink:0;
+                position: relative;
+                height: 400px;
+                overflow: auto;
+                border-radius: 8px;
+                margin: 0 50px;
+                border: 2px solid #42b883;
+            }
+            .tit {
+                padding: 10px 0;
+                border-bottom: 2px solid #42b883;
+                text-align: center;
+            }
+            .right {
+                display: flex;
+                flex-direction: column;
+                width: 350px;
+            }
+            .drag-wrap {
+                padding: 0 15px;
+            }
+            .drag-wrap .pic {
+                display: block;
+                width: 50px;
+                margin-top: 15px;
+                cursor: pointer;
+                border-radius: 4px;
+                user-select: none;
+            }
+            .place-wrap {
+                position: relative;
+                flex: 1;
+                overflow: hidden;
+            }
+            #drag-temp {
+                width: 50px;
+                display: block;
+                -webkit-user-drag: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <h2 class="title">拖拽替换、新增</h2>
+
+            <div class="main">
+                <!-- 拖拽区域 -->
+                <div class="list-wrap left">
+                    <div class="tit">素材区</div>
+                    <div class="drag-wrap">
+                        <img
+                            class="drag-ele pic"
+                            src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/3e8cb27f44884bc18bcc5b047ea088af~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5LiA562Q5pif5YWJ:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzA3NTE4OTg1NzM1MTk4In0%3D&rk3s=e9ecf3d6&x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&x-orig-expires=1724746526&x-orig-sign=haxoeTJJxn3YnC4yqM6V5CWrvmk%3D"
+                            alt=""
+                        />
+                        <img
+                            class="drag-ele pic"
+                            src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/3704aad08be44d08b40f10e014dab67c~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5LiA562Q5pif5YWJ:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzA3NTE4OTg1NzM1MTk4In0%3D&rk3s=e9ecf3d6&x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&x-orig-expires=1724746526&x-orig-sign=t%2BmN3xm%2BW3XLB1G21x3c4DKh8HA%3D"
+                            alt=""
+                        />
+                    </div>
+                </div>
+
+                <!-- 右侧放置区 -->
+                <div class="list-wrap right">
+                    <div class="tit">放置区</div>
+                    <div class="place-wrap"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const $ = (selector) => document.querySelector(selector);
+            let dragState = false; // 拖拽状态
+            let dragEle = null; // 拖拽元素
+            let dragEleInfo = {}; // 拖拽元素的初始信息
+            let dragTempEle = null; // 创建的临时元素
+
+            // 绑定鼠标事件
+            document.addEventListener('DOMContentLoaded', (e) => {
+                $('.drag-wrap').addEventListener('mousedown', mouseDown);
+                document.addEventListener('mousemove', mouseMove);
+                document.addEventListener('mouseup', mouseUp);
+            });
+
+            // 鼠标对应事件处理方法
+            function mouseDown(event) {
+                // 判断在可拖动元素上进行点击时，才执行后续拖拽相关逻辑
+                if (event.target.classList.contains('drag-ele')) {
+                    dragState = true;
+                    dragEle = event.target;
+                }
+            }
+            function mouseMove(event) {
+                if (dragState) {
+                    // 创建临时元素
+                    createTempEle(event);
+
+                    // 修改临时元素位置
+                    setTempPosi(event);
+                }
+            }
+            function mouseUp(event) {
+                if (dragState) {
+                    // 判断是否在同类元素上松开，是则进行替换，反之新增
+                    const sameEle = findSameEle();
+                    if (sameEle) {
+                        replaceEle(sameEle);
+                    } else {
+                        addEle();
+                    }
+
+                    // 移除拖拽临时元素，重置拖拽相关数据
+                    dragState = false;
+                    dragTempEle = null;
+                    if ($('#drag-temp')) {
+                        $('#drag-temp').remove();
+                    }
+
+                    // 清空所有遮罩，解决鼠标拖拽到不可替换的同类元素上，进行错误提示后，遮罩没有消失的问题
+                    // $('#main-center .eles').removeClass('drag-ele-cover');
+                }
+            }
+
+            // 查找当前位置是否所有同类元素
+            function findSameEle() {
+                const eles = document.elementsFromPoint(event.pageX, event.pageY);
+                let sameEle = null;
+                for (let item of eles) {
+                    if (item.classList.contains('eles')) {
+                        sameEle = item;
+                        break;
+                    }
+                }
+                return sameEle;
+            }
+
+            // 拖拽元素时生成临时元素
+            function createTempEle(event) {
+                // 判断是否已创建临时元素
+                if (dragTempEle) return;
+
+                const w = event.target.offsetWidth;
+                const h = event.target.offsetHeight;
+                let left = 0;
+                let top = 0;
+                dragEleInfo = {
+                    offX: event.offsetX,
+                    offY: event.offsetY,
+                    left: event.clientX,
+                    top: event.clientY
+                };
+                let tempEle = event.target.cloneNode(true);
+                tempEle.id = 'drag-temp';
+
+                // 获取拖拽元素内的封图元素，克隆的元素内使用原图，保证放大后的清晰度
+                tempEle.style.cssText = `max-width:${w}px; max-height:${h}px;`;
+
+                // 设置临时元素的样式
+                left = event.clientX - dragEleInfo.offX;
+                top = event.clientY - dragEleInfo.offY;
+                tempEle.style.cssText = `
+                    position: fixed;
+                    left: ${left}px;
+                    top: ${top}px;
+                    z-index:100;
+                    width:${w}px;
+                    height:${h}px;
+                    opacity:.6;
+                    transform-origin:${dragEleInfo.offX}px ${dragEleInfo.offY}px;
+                `;
+                dragTempEle = tempEle;
+                document.body.appendChild(tempEle);
+            }
+
+            // 拖动时，设置临时元素的位置
+            function setTempPosi(event) {
+                if (dragState) {
+                    // 计算移位置
+                    dragTempEle.style.left = event.clientX - dragEleInfo.offX + 'px';
+                    dragTempEle.style.top = event.clientY - dragEleInfo.offY + 'px';
+
+                    // 根据横向拖动距离，计算放大比例(最多放大2倍)
+                    const moveX = event.clientX - dragEleInfo.left;
+                    const ratio = Math.min(Math.max((moveX / 100) * 2, 0), 1);
+                    const scale = 1 + ratio;
+                    dragTempEle.style.transform = `scale(${scale})`;
+                }
+            }
+
+            // 拖拽新增数据
+            function addEle(e) {
+                const eles = document.elementsFromPoint(event.pageX, event.pageY);
+
+                // 判断在画布上松开鼠标才新增元素
+                let add = false;
+                for (let ele of eles) {
+                    // 如果在放置区松开鼠标则新增
+                    if (ele.classList.contains('place-wrap')) {
+                        add = true;
+                        break;
+                    }
+                }
+                if (add) {
+                    // 获取画布和临时元素信息
+                    const place = $('.place-wrap');
+                    const info = place.getBoundingClientRect();
+                    const infoTemp = dragTempEle.getBoundingClientRect();
+
+                    // 计算元素插入的位置、尺寸等信息
+                    const imgEle = document.createElement('img');
+                    imgEle.src = dragTempEle.src;
+                    imgEle.classList.add('eles');
+                    imgEle.style.cssText = `
+                        position: absolute;
+                        left: ${infoTemp.x - info.x}px;
+                        top: ${infoTemp.y - info.y}px;
+                        width:${infoTemp.width}px;
+                        height:${infoTemp.height}px;
+                    `;
+                    place.appendChild(imgEle);
+                }
+            }
+
+            // 松开鼠标判断新增还是替换同类元素
+            function replaceEle(sameEle) {
+                sameEle.src = dragTempEle.src;
+            }
+        </script>
+    </body>
+</html>

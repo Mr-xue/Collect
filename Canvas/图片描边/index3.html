@@ -8,50 +8,75 @@
         <script src="./pixi.js"></script>
         <!-- <script src="./pixi-filters.js"></script> -->
         <script src="https://cdn.jsdelivr.net/npm/pixi-filters@latest/dist/browser/pixi-filters.min.js"></script>
+        <style>
+            canvas {
+                display: block;
+                outline: 1px solid teal;
+            }
+            #demo {
+                width: 300px;
+                height: 400px;
+            }
+        </style>
     </head>
     <body>
-        <input
-            type="range"
-            min="1"
-            max="60"
-            value="2"
-            
-            oninput="change(this)"
-        />
+        <canvas id="demo"></canvas>
+
+        <input type="range" min="1" max="60" value="2" oninput="change(this)" />
         <script>
-            let app = new PIXI.Application({ width: 1280, height: 854 });
-            document.body.appendChild(app.view);
+            // 往canvas绘制图片
+            let canvas = document.getElementById('demo');
+            canvas.width = 540;
+            canvas.height = 810;
+            let ctx = canvas.getContext('2d');
 
-            // 异步加载图片,并置入舞台
-            // let sprite = PIXI.Sprite.from('./imgs/tree.png');
-            let sprite = PIXI.Sprite.from('./imgs/people.png');
-            // let sprite = PIXI.Sprite.from('./imgs/p1.png');
-            // let sprite = PIXI.Sprite.from('./imgs/demo.png');
-            sprite.width = 800;
-            sprite.height = 800;
-            // f1：描边滤镜 | f2：阴影滤镜
-            let f1 = new PIXI.filters.OutlineFilter(2, 'coral', 0.5),
-                f2 = new PIXI.filters.DropShadowFilter({
-                    blur:6,
-                    quality:3,
-                    alpha:.5,
-                    offset:{
-                        x:10,
-                        y:10
-                    },
-                    color:'#fff'
-                })
-            sprite.filters = [f1,f2];
+            let img = new Image();
+            img.onload = function () {
+                console.log('输出', img.width, img.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = './imgs/test.png';
 
-            app.stage.addChild(sprite);
+            let sprite;
+            setTimeout(function () {
+                // pixijs绘制边框
+                let app = new PIXI.Application({ width: 540, height: 810, backgroundAlpha: 0 });
+                document.body.appendChild(app.view);
 
+                // 异步加载图片,并置入舞台
+                sprite = PIXI.Sprite.from(canvas);
+                // let sprite = PIXI.Sprite.from('./imgs/test.png');
+                // let sprite = PIXI.Sprite.from('./imgs/people.png');
+                // let sprite = PIXI.Sprite.from('./imgs/p1.png');
+                // let sprite = PIXI.Sprite.from('./imgs/demo.png');
+                sprite.width = 540;
+                sprite.height = 810;
+                // f1：描边滤镜 | f2：阴影滤镜
+                let f1 = new PIXI.filters.OutlineFilter(2, 'coral', 0.5),
+                    f2 = new PIXI.filters.DropShadowFilter({
+                        blur: 6,
+                        quality: 3,
+                        alpha: 0.5,
+                        offset: {
+                            x: 10,
+                            y: 10
+                        },
+                        color: '#fff'
+                    });
+                // sprite.filters = [f1,f2];
+                sprite.filters = [f1];
+
+                app.stage.addChild(sprite);
+
+            }, 2000);
             // 修改描边宽度
             function change(e) {
                 console.log('输出', e.value);
                 let v = e.value;
                 sprite.filters = [
                     // 参数：轮廓大小，颜色，轮廓质量，透明度
-                    new PIXI.filters.OutlineFilter(v, 'coral', .9, 1), f2
+                    // new PIXI.filters.OutlineFilter(v, 'coral', .9, 1), f2
+                    new PIXI.filters.OutlineFilter(v, 'coral', 0.9, 1)
                 ];
             }
         </script>
