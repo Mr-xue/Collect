@@ -1,0 +1,590 @@
+/* ========================================
+   Playful Geometric Design System
+   ======================================== */
+
+/* Import Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
+
+/* Design Tokens */
+:root {
+  /* Colors */
+  --bg-color: #FFFDF5;
+  --fg-color: #1E293B;
+  --muted: #F1F5F9;
+  --muted-fg: #64748B;
+  --accent: #8B5CF6;
+  --accent-fg: #FFFFFF;
+  --secondary: #F472B6;
+  --tertiary: #FBBF24;
+  --quaternary: #34D399;
+  --border: #E2E8F0;
+  --input-bg: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --ring: #8B5CF6;
+
+  /* Typography */
+  --font-heading: 'Outfit', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  /* Scale Ratio: 1.25 (Major Third) */
+  --text-xs: 0.625rem;
+  --text-sm: 0.75rem;
+  --text-base: 0.875rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.875rem;
+  --text-3xl: 2.25rem;
+  --text-4xl: 3rem;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+  --border-width: 2px;
+
+  /* Shadows - Hard Shadow (No Blur) */
+  --shadow-sm: 2px 2px 0px 0px var(--fg-color);
+  --shadow-md: 4px 4px 0px 0px var(--fg-color);
+  --shadow-lg: 6px 6px 0px 0px var(--fg-color);
+  --shadow-sm-hover: 4px 4px 0px 0px var(--fg-color);
+  --shadow-md-hover: 6px 6px 0px 0px var(--fg-color);
+  --shadow-sm-active: 1px 1px 0px 0px var(--fg-color);
+  --shadow-md-active: 2px 2px 0px 0px var(--fg-color);
+  --shadow-accent: 4px 4px 0px 0px var(--accent);
+
+  /* Shadows - Color Variants */
+  --shadow-pink: 4px 4px 0px 0px var(--secondary);
+  --shadow-yellow: 4px 4px 0px 0px var(--tertiary);
+  --shadow-mint: 4px 4px 0px 0px var(--quaternary);
+
+  /* Transitions */
+  --transition-bounce: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-smooth: all 0.2s ease;
+}
+
+/* Base Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-color);
+  color: var(--fg-color);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* Dot Grid Background Pattern */
+.dot-grid-bg {
+  background-image: radial-gradient(circle, var(--muted-fg) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* ========================================
+   Typography
+   ======================================== */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+h5 { font-size: var(--text-lg); }
+h6 { font-size: var(--text-base); }
+
+/* ========================================
+   Buttons
+   ======================================== */
+
+/* Primary Button - Candy Button */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--text-base);
+  color: var(--accent-fg);
+  background-color: var(--accent);
+  border: var(--border-width) solid var(--fg-color);
+  border-radius: var(--radius-full);
+  padding: 12px 28px;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: var(--transition-bounce);
+  position: relative;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-md-active);
+}
+
+.btn-primary .btn-icon-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: var(--accent-fg);
+  border-radius: 50%;
+}
+
+/* Secondary Button */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--text-base);
+  color: var(--fg-color);
+  background-color: transparent;
+  border: var(--border-width) solid var(--fg-color);
+  border-radius: var(--radius-full);
+  padding: 12px 28px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  background-color: var(--tertiary);
+  transform: translate(-1px, -1px);
+}
+
+.btn-secondary:active {
+  transform: translate(1px, 1px);
+}
+
+/* ========================================
+   Cards
+   ======================================== */
+
+.card {
+  background-color: var(--card-bg);
+  border: var(--border-width) solid var(--fg-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-bounce);
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: rotate(-1deg) scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+  padding: 20px;
+  border-bottom: var(--border-width) solid var(--border);
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.card-footer {
+  padding: 20px;
+  border-top: var(--border-width) solid var(--border);
+}
+
+/* Card Icon Circle */
+.card-icon {
+  position: absolute;
+  top: -16px;
+  left: 20px;
+  width: 48px;
+  height: 48px;
+  background-color: var(--accent);
+  border: var(--border-width) solid var(--fg-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ========================================
+   Form Elements
+   ======================================== */
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg-color);
+  margin-bottom: 8px;
+}
+
+.form-label span.value-display {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Text Input */
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg-color);
+  background-color: var(--input-bg);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 4px 4px 0px 0px transparent;
+  transition: var(--transition-smooth);
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-accent);
+}
+
+.form-input::placeholder {
+  color: var(--muted-fg);
+}
+
+/* Textarea */
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg-color);
+  background-color: var(--input-bg);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 4px 4px 0px 0px transparent;
+  transition: var(--transition-smooth);
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-accent);
+}
+
+/* Range Input */
+.form-range {
+  width: 100%;
+  height: 8px;
+  background: var(--muted);
+  border-radius: var(--radius-full);
+  border: var(--border-width) solid var(--fg-color);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.form-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: var(--accent);
+  border: var(--border-width) solid var(--fg-color);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-bounce);
+}
+
+.form-range::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+.form-range::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: var(--accent);
+  border: var(--border-width) solid var(--fg-color);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-bounce);
+}
+
+/* Color Input */
+.form-color {
+  width: 100%;
+  height: 48px;
+  padding: 4px;
+  background-color: var(--input-bg);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  outline: none;
+}
+
+.form-color:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-accent);
+}
+
+/* Select */
+.form-select {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg-color);
+  background-color: var(--input-bg);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231E293B' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.form-select:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-accent);
+}
+
+/* Checkbox */
+.form-checkbox-group {
+  display: flex;
+  gap: 20px;
+}
+
+.form-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg-color);
+  cursor: pointer;
+  user-select: none;
+}
+
+.form-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* ========================================
+   Canvas Container
+   ======================================== */
+
+.canvas-container {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.canvas-wrapper {
+  background-color: var(--card-bg);
+  border: var(--border-width) solid var(--fg-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 8px;
+  transition: var(--transition-bounce);
+}
+
+.canvas-wrapper:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.canvas-wrapper canvas {
+  border-radius: var(--radius-md);
+  background-color: var(--input-bg);
+}
+
+/* ========================================
+   Controls Panel
+   ======================================== */
+
+.controls-panel {
+  background-color: var(--card-bg);
+  border: var(--border-width) solid var(--fg-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pink);
+  padding: 24px;
+  width: 320px;
+  transition: var(--transition-bounce);
+}
+
+.controls-panel:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.controls-panel h2 {
+  font-size: var(--text-xl);
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: var(--border-width) solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.controls-panel h2::before {
+  content: '';
+  display: block;
+  width: 8px;
+  height: 8px;
+  background-color: var(--secondary);
+  border: var(--border-width) solid var(--fg-color);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ========================================
+   Decorative Shapes
+   ======================================== */
+
+/* Circle decoration */
+.deco-circle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.deco-circle-yellow {
+  background-color: var(--tertiary);
+  border: var(--border-width) solid var(--fg-color);
+  box-shadow: var(--shadow-yellow);
+}
+
+.deco-circle-pink {
+  background-color: var(--secondary);
+  border: var(--border-width) solid var(--fg-color);
+  box-shadow: var(--shadow-pink);
+}
+
+.deco-circle-mint {
+  background-color: var(--quaternary);
+  border: var(--border-width) solid var(--fg-color);
+  box-shadow: var(--shadow-mint);
+}
+
+/* Triangle decoration */
+.deco-triangle {
+  position: absolute;
+  pointer-events: none;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.deco-triangle-accent {
+  background-color: var(--accent);
+  border: var(--border-width) solid var(--fg-color);
+  box-shadow: var(--shadow-md);
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+
+@media (max-width: 768px) {
+  .canvas-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .controls-panel {
+    width: 100%;
+    max-width: 500px;
+  }
+
+  /* Smaller shadows on mobile */
+  .btn-primary {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-primary:hover {
+    box-shadow: var(--shadow-sm-hover);
+  }
+
+  .card {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .controls-panel {
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Disable wiggle on mobile */
+  .card:hover {
+    transform: none;
+  }
+}
+
+/* ========================================
+   Accessibility - Reduced Motion
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .card:hover,
+  .controls-panel:hover {
+    transform: none;
+  }
+}

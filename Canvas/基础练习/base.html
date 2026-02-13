@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas 文字绘制器 - Playful Geometric</title>
+    <link rel="stylesheet" href="design-tokens.css">
+</head>
+<body class="dot-grid-bg">
+    <!-- Decorative Shapes -->
+    <div class="deco-circle deco-circle-yellow" style="width: 120px; height: 120px; top: -40px; left: -40px;"></div>
+    <div class="deco-circle deco-circle-pink" style="width: 80px; height: 80px; top: 100px; right: -20px;"></div>
+    <div class="deco-triangle deco-triangle-accent" style="width: 60px; height: 60px; bottom: 50px; left: 20px;"></div>
+
+    <div class="canvas-container">
+        <div class="canvas-wrapper">
+            <canvas id="myCanvas"></canvas>
+        </div>
+
+        <div class="controls-panel">
+            <h2>🎨 绘制设置</h2>
+
+            <div class="form-group">
+                <label class="form-label" for="textContent">文字内容</label>
+                <textarea id="textContent" class="form-textarea">Hello High-DPI Canvas!</textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="fontSize">
+                    字体大小: <span id="fontSizeValue" class="value-display">32</span>px
+                </label>
+                <input type="range" id="fontSize" class="form-range" min="12" max="72" value="32">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="textColor">文字颜色</label>
+                <input type="color" id="textColor" class="form-color" value="#1E293B">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">样式选项</label>
+                <div class="form-checkbox-group">
+                    <label class="form-checkbox-label">
+                        <input type="checkbox" id="italic" class="form-checkbox">
+                        <span>斜体</span>
+                    </label>
+                    <label class="form-checkbox-label">
+                        <input type="checkbox" id="underline" class="form-checkbox">
+                        <span>下划线</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="letterSpacing">
+                    字间距: <span id="letterSpacingValue" class="value-display">0</span>px
+                </label>
+                <input type="range" id="letterSpacing" class="form-range" min="-5" max="20" value="0">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="lineHeight">
+                    行间距: <span id="lineHeightValue" class="value-display">1.5</span>
+                </label>
+                <input type="range" id="lineHeight" class="form-range" min="1" max="3" step="0.1" value="1.5">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="textAlign">对齐方式</label>
+                <select id="textAlign" class="form-select">
+                    <option value="left">左对齐</option>
+                    <option value="center" selected>居中</option>
+                    <option value="right">右对齐</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="drawMode">绘制模式</label>
+                <select id="drawMode" class="form-select">
+                    <option value="straight" selected>直线</option>
+                    <option value="arc">圆弧</option>
+                    <option value="sine">正弦曲线</option>
+                    <option value="cosine">余弦曲线</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="amplitudeGroup" style="display: none;">
+                <label class="form-label" for="amplitude">
+                    曲线幅度: <span id="amplitudeValue" class="value-display">50</span>px
+                </label>
+                <input type="range" id="amplitude" class="form-range" min="10" max="150" value="50">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 设置canvas的CSS尺寸
+        const width = 600;
+        const height = 600;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+
+        // 获取设备像素比，实现高清显示
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+
+        // 缩放上下文，使绘制操作使用逻辑像素
+        ctx.scale(dpr, dpr);
+
+        // 获取控件元素
+        const textContent = document.getElementById('textContent');
+        const fontSize = document.getElementById('fontSize');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const textColor = document.getElementById('textColor');
+        const italic = document.getElementById('italic');
+        const underline = document.getElementById('underline');
+        const letterSpacing = document.getElementById('letterSpacing');
+        const letterSpacingValue = document.getElementById('letterSpacingValue');
+        const lineHeight = document.getElementById('lineHeight');
+        const lineHeightValue = document.getElementById('lineHeightValue');
+        const textAlign = document.getElementById('textAlign');
+        const drawMode = document.getElementById('drawMode');
+        const amplitude = document.getElementById('amplitude');
+        const amplitudeValue = document.getElementById('amplitudeValue');
+        const amplitudeGroup = document.getElementById('amplitudeGroup');
+
+        // 获取文字样式的通用配置
+        function getTextStyle() {
+            const size = parseInt(fontSize.value);
+            const color = textColor.value;
+            const isItalic = italic.checked;
+            const spacing = parseInt(letterSpacing.value);
+            const fontStyle = isItalic ? 'italic' : 'normal';
+
+            return { size, color, fontStyle, spacing };
+        }
+
+        // 设置上下文样式
+        function setContextStyles(style) {
+            ctx.font = `${style.fontStyle} ${style.size}px sans-serif`;
+            ctx.fillStyle = style.color;
+            ctx.textBaseline = 'middle';
+            ctx.letterSpacing = style.spacing + 'px';
+        }
+
+        // 计算单个字符的宽度（考虑字间距）
+        function getCharWidth(char, size, spacing) {
+            ctx.font = `${size}px sans-serif`;
+            return ctx.measureText(char).width + spacing;
+        }
+
+        // 计算整个文本的总宽度
+        function getTotalTextWidth(text, size, spacing) {
+            let totalWidth = 0;
+            for (let i = 0; i < text.length; i++) {
+                totalWidth += getCharWidth(text[i], size, spacing);
+            }
+            return totalWidth - spacing;
+        }
+
+        // 绘制下划线
+        function drawUnderline(path, color) {
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke(path);
+            ctx.restore();
+        }
+
+        // 直线绘制方法
+        function drawStraightText(text, style) {
+            const { size, color, spacing } = style;
+            const lineH = parseFloat(lineHeight.value);
+            const align = textAlign.value;
+
+            setContextStyles(style);
+            ctx.textAlign = align;
+
+            const lines = text.split('\n');
+            const totalLines = lines.length;
+            const lineHeightPx = size * lineH;
+            const totalHeight = totalLines * lineHeightPx;
+            const startY = (height - totalHeight) / 2 + lineHeightPx / 2;
+
+            lines.forEach((line, index) => {
+                const y = startY + index * lineHeightPx;
+                let x;
+                if (align === 'left') x = 5;
+                else if (align === 'right') x = width - 5;
+                else x = width / 2;
+
+                // 绘制下划线
+                if (underline.checked) {
+                    const totalWidth = getTotalTextWidth(line, size, spacing);
+                    const underlineY = y + size / 2 + 4;
+                    let underlineX;
+                    if (align === 'left') underlineX = x;
+                    else if (align === 'right') underlineX = x - totalWidth;
+                    else underlineX = x - totalWidth / 2;
+
+                    const underlinePath = new Path2D();
+                    underlinePath.moveTo(underlineX, underlineY);
+                    underlinePath.lineTo(underlineX + totalWidth, underlineY);
+                    drawUnderline(underlinePath, color);
+                }
+
+                ctx.fillText(line, x, y);
+            });
+        }
+
+        // 圆弧绘制方法
+        function drawArcText(text, style) {
+            const { size, color, spacing } = style;
+            const amp = parseInt(amplitude.value);
+            const lineH = parseFloat(lineHeight.value);
+
+            setContextStyles(style);
+            ctx.textAlign = 'center';
+
+            const radius = amp;
+            const centerX = width / 2;
+            const centerY = height / 2 + radius * 0.3;
+
+            // 按换行符分割文字
+            const lines = text.split('\n');
+            const totalLines = lines.length;
+            const lineHeightPx = size * lineH;
+
+            // 计算所有行的总高度，用于垂直居中
+            const totalHeight = totalLines * lineHeightPx;
+            const startY = (height - totalHeight) / 2;
+
+            // 记录下划线路径
+            let underlinePath = null;
+            if (underline.checked) {
+                underlinePath = new Path2D();
+            }
+
+            let isFirstPoint = true;
+
+            // 绘制每一行
+            lines.forEach((line, lineIndex) => {
+                const lineCenterY = startY + lineIndex * lineHeightPx + lineHeightPx / 2;
+
+                // 调整圆心，使每行文字居中
+                const adjustedCenterY = centerY + (lineIndex - (totalLines - 1) / 2) * lineHeightPx;
+
+                // 计算文本总宽度对应的弧度
+                const totalWidth = getTotalTextWidth(line, size, spacing);
+                const totalAngle = totalWidth / radius;
+                const startAngle = -totalAngle / 2;
+
+                let currentAngle = startAngle;
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    const x = centerX + Math.cos(currentAngle) * radius;
+                    const y = adjustedCenterY + Math.sin(currentAngle) * radius;
+
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(currentAngle + Math.PI / 2);
+                    ctx.fillText(char, 0, 0);
+                    ctx.restore();
+
+                    // 下划线
+                    if (underline.checked) {
+                        const charWidth = getCharWidth(char, size, spacing);
+                        // 文字朝外旋转（currentAngle + Math.PI/2），所以下划线应在文字内侧（向圆心方向）
+                        const underlineRadius = radius - size / 2 - 4;
+
+                        // 使用多个采样点使下划线更平滑连贯
+                        const samples = 10;
+                        for (let s = 0; s < samples; s++) {
+                            const t1 = s / samples;
+                            const t2 = (s + 1) / samples;
+                            const angle1 = currentAngle + t1 * charWidth / radius;
+                            const angle2 = currentAngle + t2 * charWidth / radius;
+
+                            const x1 = centerX + Math.cos(angle1) * underlineRadius;
+                            const y1 = adjustedCenterY + Math.sin(angle1) * underlineRadius;
+                            const x2 = centerX + Math.cos(angle2) * underlineRadius;
+                            const y2 = adjustedCenterY + Math.sin(angle2) * underlineRadius;
+
+                            if (isFirstPoint) {
+                                underlinePath.moveTo(x1, y1);
+                                isFirstPoint = false;
+                            } else {
+                                underlinePath.lineTo(x1, y1);
+                            }
+                            underlinePath.lineTo(x2, y2);
+                        }
+                    }
+
+                    currentAngle += getCharWidth(char, size, spacing) / radius;
+                }
+            });
+
+            if (underline.checked) {
+                drawUnderline(underlinePath, color);
+            }
+        }
+
+        // 正弦曲线绘制方法
+        function drawSineText(text, style) {
+            drawWaveText(text, style, 'sine');
+        }
+
+        // 余弦曲线绘制方法
+        function drawCosineText(text, style) {
+            drawWaveText(text, style, 'cosine');
+        }
+
+        // 波浪曲线绘制通用方法
+        function drawWaveText(text, style, waveType) {
+            const { size, color, spacing } = style;
+            const amp = parseInt(amplitude.value);
+            const lineH = parseFloat(lineHeight.value);
+
+            setContextStyles(style);
+            ctx.textAlign = 'center';
+
+            // 按换行符分割文字
+            const lines = text.split('\n');
+            const totalLines = lines.length;
+            const lineHeightPx = size * lineH;
+
+            // 计算所有行的总高度，用于垂直居中
+            const totalHeight = totalLines * lineHeightPx;
+            const startY = (height - totalHeight) / 2;
+
+            let underlinePath = null;
+            if (underline.checked) {
+                underlinePath = new Path2D();
+            }
+
+            let isFirstPoint = true;
+
+            // 绘制每一行
+            lines.forEach((line, lineIndex) => {
+                const lineCenterY = startY + lineIndex * lineHeightPx + lineHeightPx / 2;
+
+                const totalWidth = getTotalTextWidth(line, size, spacing);
+                const startX = (width - totalWidth) / 2;
+
+                let currentX = startX;
+                const waveLength = totalWidth;
+
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    const charWidth = getCharWidth(char, size, spacing);
+                    const midX = currentX + charWidth / 2;
+                    const progress = (midX - startX) / waveLength;
+
+                    let y, rotation;
+                    if (waveType === 'sine') {
+                        y = lineCenterY + Math.sin(progress * Math.PI * 2) * amp;
+                        // 计算正弦曲线的切线角度：dy/dx = cos(2πx/L) * 2π * amp / L
+                        const derivative = Math.cos(progress * Math.PI * 2) * (Math.PI * 2) * amp / waveLength;
+                        rotation = Math.atan(derivative);
+                    } else {
+                        y = lineCenterY + Math.cos(progress * Math.PI * 2) * amp;
+                        // 计算余弦曲线的切线角度：dy/dx = -sin(2πx/L) * 2π * amp / L
+                        const derivative = -Math.sin(progress * Math.PI * 2) * (Math.PI * 2) * amp / waveLength;
+                        rotation = Math.atan(derivative);
+                    }
+
+                    ctx.save();
+                    ctx.translate(midX, y);
+                    ctx.rotate(rotation);
+                    ctx.fillText(char, 0, 0);
+                    ctx.restore();
+
+                    // 下划线
+                    if (underline.checked) {
+                        const underlineOffset = size / 2 + 4;
+                        const samples = 10;
+
+                        for (let s = 0; s < samples; s++) {
+                            const t1 = s / samples;
+                            const t2 = (s + 1) / samples;
+                            const x1 = currentX + t1 * charWidth;
+                            const x2 = currentX + t2 * charWidth;
+                            const p1 = (x1 - startX) / waveLength;
+                            const p2 = (x2 - startX) / waveLength;
+
+                            let y1, y2;
+                            if (waveType === 'sine') {
+                                y1 = lineCenterY + Math.sin(p1 * Math.PI * 2) * amp + underlineOffset;
+                                y2 = lineCenterY + Math.sin(p2 * Math.PI * 2) * amp + underlineOffset;
+                            } else {
+                                y1 = lineCenterY + Math.cos(p1 * Math.PI * 2) * amp + underlineOffset;
+                                y2 = lineCenterY + Math.cos(p2 * Math.PI * 2) * amp + underlineOffset;
+                            }
+
+                            if (isFirstPoint) {
+                                underlinePath.moveTo(x1, y1);
+                                isFirstPoint = false;
+                            } else {
+                                underlinePath.lineTo(x1, y1);
+                            }
+                            underlinePath.lineTo(x2, y2);
+                        }
+                    }
+
+                    currentX += charWidth;
+                }
+            });
+
+            if (underline.checked) {
+                drawUnderline(underlinePath, color);
+            }
+        }
+
+        // 绘制模式路由器
+        const drawModeHandlers = {
+            'straight': drawStraightText,
+            'arc': drawArcText,
+            'sine': drawSineText,
+            'cosine': drawCosineText
+        };
+
+        // 主绘制函数
+        function drawText() {
+            ctx.clearRect(0, 0, width, height);
+
+            const text = textContent.value;
+            const style = getTextStyle();
+            const mode = drawMode.value;
+
+            const handler = drawModeHandlers[mode];
+            if (handler) {
+                handler(text, style);
+            }
+        }
+
+        // 更新显示值并重绘
+        function updateAndDraw() {
+            fontSizeValue.textContent = fontSize.value;
+            letterSpacingValue.textContent = letterSpacing.value;
+            lineHeightValue.textContent = lineHeight.value;
+            amplitudeValue.textContent = amplitude.value;
+            drawText();
+        }
+
+        // 切换幅度控制显示
+        function toggleAmplitudeControl() {
+            const mode = drawMode.value;
+            amplitudeGroup.style.display = mode === 'straight' ? 'none' : 'block';
+        }
+
+        // 为所有控件添加事件监听
+        textContent.addEventListener('input', drawText);
+        fontSize.addEventListener('input', updateAndDraw);
+        textColor.addEventListener('input', drawText);
+        italic.addEventListener('change', drawText);
+        underline.addEventListener('change', drawText);
+        letterSpacing.addEventListener('input', updateAndDraw);
+        lineHeight.addEventListener('input', updateAndDraw);
+        textAlign.addEventListener('change', drawText);
+        drawMode.addEventListener('change', () => {
+            toggleAmplitudeControl();
+            drawText();
+        });
+        amplitude.addEventListener('input', updateAndDraw);
+
+        // 初始绘制
+        toggleAmplitudeControl();
+        drawText();
+    </script>
+</body>
+</html>

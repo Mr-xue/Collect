@@ -9,6 +9,10 @@
 		margin: 0;
 		padding: 0;
 	}
+    canvas{
+        width: 100%;
+        height: 100%;
+    }
 	</style>
 </head>
 
@@ -16,7 +20,7 @@
 	<canvas id="canvas"></canvas>
 	<script>
 	//获取弧度
-	
+
 	function getRad (degrees) { return (Math.PI / 180) * degrees; }
 
 	// 获取角度
@@ -28,7 +32,6 @@
 	canvas.height = h;
 
 	let ctx = canvas.getContext('2d');
-	console.log(ctx);
 
 	// 三角形
 	ctx.beginPath();
@@ -68,14 +71,14 @@
 	// 2.绘制矩形
 	ctx.fillStyle='#FD8E6F';
 	// 实心矩形
-	ctx.fillRect(20,50,180,180) 
-	
+	ctx.fillRect(20,50,180,180)
+
 	// 空心矩形
 	// ctx.strokeRect(20,50,180,180)
-	
+
 	//清除某个区域的矩形
 	// ctx.clearRect(100,30,50,50)
-	
+
 	// 3.绘制字体
 	ctx.font = 'Bold 20px Arial';
 	ctx.textAlign = 'left';
@@ -89,13 +92,13 @@
 	// 4.绘制圆
 	ctx.beginPath();
 	// 实心圆
-	ctx.arc(280, 90, 45, 0, Math.PI*2, true); 
-	ctx.fillStyle = "#43C1B5"; 
+	ctx.arc(280, 90, 45, 0, Math.PI*2, true);
+	ctx.fillStyle = "#43C1B5";
 	ctx.fill();
 	// 空心圆
 	ctx.beginPath();
 	ctx.arc(280,190,45,0,Math.PI*2,true);
-	ctx.lineWidth = 1; 
+	ctx.lineWidth = 1;
 	ctx.strokeStyle="#43C1B5";
 	ctx.stroke();
 
@@ -104,7 +107,7 @@
 	ctx.beginPath();
 	ctx.moveTo(430,90);
 	ctx.arc(430, 90, 45, getRad(-30), getRad(30), true);
-	ctx.lineWidth = 1; 
+	ctx.lineWidth = 1;
 	ctx.fillStyle="#43C1B5";
 	ctx.closePath();
 	ctx.fill();
@@ -113,14 +116,14 @@
 	ctx.beginPath();
 	ctx.moveTo(430,190)
 	ctx.arc(430,190,45,getRad(-30),getRad(30),true);
-	ctx.lineWidth = 1; 
+	ctx.lineWidth = 1;
 	ctx.strokeStyle="#43C1B5";
 	ctx.closePath();
 	ctx.stroke();
 
-	// 6.设置渐变 
-	var myGradient = ctx.createLinearGradient(0, 0, 0, 160); 
-	myGradient.addColorStop(0, "#FD8E6F"); 
+	// 6.设置渐变
+	var myGradient = ctx.createLinearGradient(0, 0, 0, 160);
+	myGradient.addColorStop(0, "#FD8E6F");
 	myGradient.addColorStop(1, "#F45F62");
 	ctx.fillStyle = myGradient;
 	ctx.fillRect(500,20,200,200);
@@ -145,7 +148,7 @@
 		ctx.beginPath();
 		ctx.fillStyle = "white";
 
-		ctx.arc(posX, posY, 10, 0, Math.PI*2, true); 
+		ctx.arc(posX, posY, 10, 0, Math.PI*2, true);
 		ctx.closePath();
 		ctx.fill();
 	}, 30);*/
@@ -165,12 +168,12 @@
 	        vx *= 0.75;
 	        posY = canvas.height * 0.75;
 	    }
-		
+
 	    vy += gravity;
 		ctx.beginPath();
 		ctx.fillStyle = "white";
 
-		ctx.arc(posX, posY, 10, 0, Math.PI*2, true); 
+		ctx.arc(posX, posY, 10, 0, Math.PI*2, true);
 		ctx.closePath();
 		ctx.fill();
 	},20);*/
