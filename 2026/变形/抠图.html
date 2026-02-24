@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenCV.js 智能抠图 Demo</title>
+    <style>
+        body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; background: #f0f2f5; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 90%; }
+        .canvas-container { display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+        canvas { background-color: #eee; border: 1px solid #ddd; border-radius: 4px; max-width: 400px; height: auto; }
+        .controls { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+        #status { color: #666; font-size: 14px; }
+        .btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn:disabled { background: #ccc; }
+        .loading-spinner { display: none; color: #007bff; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>OpenCV.js GrabCut 抠图</h2>
+
+    <div class="controls">
+        <input type="file" id="fileInput" accept="image/*">
+        <button id="runButton" class="btn" disabled>开始智能抠图</button>
+        <span id="status">正在加载 OpenCV.js...</span>
+        <span id="loadingText" class="loading-spinner">处理中，请稍候...</span>
+    </div>
+
+    <div class="canvas-container">
+        <div>
+            <p>原始图片 (自动选取 10% 边距)</p>
+            <canvas id="canvasInput"></canvas>
+        </div>
+        <div>
+            <p>抠图结果 (透明背景)</p>
+            <canvas id="canvasOutput"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+// 1. 监听 OpenCV 加载状态
+var Module = {
+    onRuntimeInitialized() {
+        document.getElementById('status').innerText = 'OpenCV.js 已就绪';
+        document.getElementById('runButton').disabled = false;
+    }
+};
+</script>
+
+<script async src="https://docs.opencv.org/4.5.4/opencv.js"></script>
+
+<script>
+const fileInput = document.getElementById('fileInput');
+const runButton = document.getElementById('runButton');
+const canvasInput = document.getElementById('canvasInput');
+const canvasOutput = document.getElementById('canvasOutput');
+const loadingText = document.getElementById('loadingText');
+
+let img = new Image();
+
+// 2. 处理文件上传
+fileInput.onchange = (e) => {
+    if (e.target.files.length === 0) return;
+    const url = URL.createObjectURL(e.target.files[0]);
+    img.src = url;
+};
+
+img.onload = () => {
+    // 限制预览图大小，避免计算量过大导致崩溃
+    const maxW = 500;
+    let scale = maxW / img.width;
+    if (scale > 1) scale = 1;
+
+    canvasInput.width = img.width * scale;
+    canvasInput.height = img.height * scale;
+    const ctx = canvasInput.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvasInput.width, canvasInput.height);
+};
+
+// 3. 核心抠图逻辑
+runButton.onclick = async () => {
+    loadingText.style.display = 'inline';
+    runButton.disabled = true;
+
+    // 给 UI 渲染留出时间
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    try {
+        let src = cv.imread(canvasInput);
+        let dst = new cv.Mat();
+        let mask = new cv.Mat();
+        let bgdModel = new cv.Mat();
+        let fgdModel = new cv.Mat();
+
+        // 转换颜色空间 RGB
+        cv.cvtColor(src, src, cv.COLOR_RGBA2RGB, 0);
+
+        // 定义抠图区域 (Rect)
+        // 假设目标在中心，四周留 10% 的边距
+        let rect = new cv.Rect(
+            src.cols * 0.1,
+            src.rows * 0.1,
+            src.cols * 0.8,
+            src.rows * 0.8
+        );
+
+        // 执行 GrabCut 算法
+        // 参数 5 是迭代次数，数值越大越精确但越慢
+        cv.grabCut(src, mask, rect, bgdModel, fgdModel, 5, cv.GC_INIT_WITH_RECT);
+
+        // 修改 Mask：将背景(0,2)设为黑色，前景(1,3)设为白色
+        for (let i = 0; i < mask.rows; i++) {
+            for (let j = 0; j < mask.cols; j++) {
+                let val = mask.ucharPtr(i, j)[0];
+                if (val === 0 || val === 2) {
+                    mask.ucharPtr(i, j)[0] = 0;
+                } else {
+                    mask.ucharPtr(i, j)[0] = 255;
+                }
+            }
+        }
+
+        // 创建带 Alpha 通道的图像
+        let rgba = new cv.Mat();
+        cv.cvtColor(src, rgba, cv.COLOR_RGB2RGBA, 0);
+
+        // 提取通道并合并 Alpha
+        let channels = new cv.MatVector();
+        cv.split(rgba, channels);
+        channels.set(3, mask); // 将 mask 作为透明度通道
+        cv.merge(channels, dst);
+
+        // 显示结果
+        cv.imshow(canvasOutput, dst);
+
+        // 释放内存（重要！）
+        src.delete(); dst.delete(); mask.delete();
+        bgdModel.delete(); fgdModel.delete();
+        rgba.delete(); channels.delete();
+
+    } catch (err) {
+        console.error(err);
+        alert("抠图失败，请重试");
+    } finally {
+        loadingText.style.display = 'none';
+        runButton.disabled = false;
+    }
+};
+</script>
+
+</body>
+</html>

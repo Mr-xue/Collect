@@ -99,7 +99,7 @@
 
         // 设置canvas的CSS尺寸
         const width = 600;
-        const height = 600;
+        let height = 300; // 初始高度，会动态调整
         canvas.style.width = width + 'px';
         canvas.style.height = height + 'px';
 
@@ -127,6 +127,51 @@
         const amplitude = document.getElementById('amplitude');
         const amplitudeValue = document.getElementById('amplitudeValue');
         const amplitudeGroup = document.getElementById('amplitudeGroup');
+
+        // 计算所需canvas高度
+        function calculateRequiredHeight(text, style, mode) {
+            const { size, spacing } = style;
+            const lineH = parseFloat(lineHeight.value);
+            const amp = parseInt(amplitude.value);
+
+            const lines = text.split('\n');
+            const totalLines = lines.length;
+            const lineHeightPx = size * lineH;
+
+            // 基础高度：所有文字行的高度
+            let baseHeight = totalLines * lineHeightPx;
+
+            // 根据绘制模式计算额外高度
+            let extraHeight = 0;
+            if (mode === 'straight') {
+                // 直线模式：不需要额外高度
+                extraHeight = 0;
+            } else if (mode === 'arc') {
+                // 圆弧模式：额外高度 = 半径 + 文字大小
+                extraHeight = amp + size;
+            } else if (mode === 'sine' || mode === 'cosine') {
+                // 波浪模式：额外高度 = 2倍幅度（上下各一倍）
+                extraHeight = amp * 2 + size;
+            }
+
+            // 添加上下边距
+            const padding = 40;
+
+            return Math.max(baseHeight + extraHeight + padding, 200);
+        }
+
+        // 更新canvas尺寸
+        function updateCanvasSize(text, style, mode) {
+            const newHeight = calculateRequiredHeight(text, style, mode);
+
+            if (newHeight !== height) {
+                height = newHeight;
+                canvas.style.height = height + 'px';
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                ctx.scale(dpr, dpr);
+            }
+        }
 
         // 获取文字样式的通用配置
         function getTextStyle() {
@@ -183,10 +228,8 @@
             ctx.textAlign = align;
 
             const lines = text.split('\n');
-            const totalLines = lines.length;
             const lineHeightPx = size * lineH;
-            const totalHeight = totalLines * lineHeightPx;
-            const startY = (height - totalHeight) / 2 + lineHeightPx / 2;
+            const startY = height / 2;
 
             lines.forEach((line, index) => {
                 const y = startY + index * lineHeightPx;
@@ -225,7 +268,7 @@
 
             const radius = amp;
             const centerX = width / 2;
-            const centerY = height / 2 + radius * 0.3;
+            const centerY = height / 2;
 
             // 按换行符分割文字
             const lines = text.split('\n');
@@ -242,10 +285,9 @@
                 underlinePath = new Path2D();
             }
 
-            let isFirstPoint = true;
-
             // 绘制每一行
             lines.forEach((line, lineIndex) => {
+                let isFirstPoint = true;
                 const lineCenterY = startY + lineIndex * lineHeightPx + lineHeightPx / 2;
 
                 // 调整圆心，使每行文字居中
@@ -339,10 +381,9 @@
                 underlinePath = new Path2D();
             }
 
-            let isFirstPoint = true;
-
             // 绘制每一行
             lines.forEach((line, lineIndex) => {
+                let isFirstPoint = true;
                 const lineCenterY = startY + lineIndex * lineHeightPx + lineHeightPx / 2;
 
                 const totalWidth = getTotalTextWidth(line, size, spacing);
@@ -427,11 +468,15 @@
 
         // 主绘制函数
         function drawText() {
-            ctx.clearRect(0, 0, width, height);
-
             const text = textContent.value;
             const style = getTextStyle();
             const mode = drawMode.value;
+
+            // 更新canvas尺寸
+            updateCanvasSize(text, style, mode);
+
+            // 清空画布
+            ctx.clearRect(0, 0, width, height);
 
             const handler = drawModeHandlers[mode];
             if (handler) {

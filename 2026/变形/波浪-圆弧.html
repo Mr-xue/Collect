@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正弦曲线文字排版</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Pacifico&family=Lobster&family=Satisfy&family=Permanent+Marker&family=Righteous&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .controls-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+
+        textarea {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+        }
+
+        /* 字体样式切换按钮 */
+        .style-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .style-btn {
+            padding: 7px 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 15px;
+            line-height: 1;
+            transition: all 0.2s ease;
+            user-select: none;
+            color: #555;
+            min-width: 38px;
+            text-align: center;
+        }
+
+        .style-btn:hover:not(.active) {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .style-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .bold-btn {
+            font-weight: 900;
+        }
+
+        .italic-btn {
+            font-style: italic;
+            font-weight: bold;
+        }
+
+        .underline-btn {
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        .hint-text {
+            font-size: 12px;
+            color: #999;
+            font-weight: normal;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌊 曲线文字排版工具</h1>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="shapeSelect">曲线类型：</label>
+                <select id="shapeSelect">
+                    <option value="sine">正弦波浪</option>
+                    <option value="arc">圆弧曲线（顶部）</option>
+                    <option value="arc-bottom">圆弧曲线（底部）</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="textInput">
+                    输入文字：<span class="hint-text">按 Enter 回车换行，多行各自独立渲染</span>
+                </label>
+                <textarea id="textInput" placeholder="输入你想要显示的文字，按 Enter 换行">Hello World!
+欢迎使用曲线文字效果！</textarea>
+            </div>
+
+            <div class="controls-row">
+                <div class="control-group">
+                    <label for="fontFamilySelect">字体：</label>
+                    <select id="fontFamilySelect">
+                        <optgroup label="── 无衬线体 ──">
+                            <option value="Arial, sans-serif">Arial</option>
+                            <option value="Verdana, sans-serif">Verdana</option>
+                            <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                            <option value="Impact, Haettenschweiler, sans-serif">Impact</option>
+                        </optgroup>
+                        <optgroup label="── 衬线体 ──">
+                            <option value="Georgia, serif">Georgia</option>
+                            <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                            <option value="Palatino, 'Palatino Linotype', serif">Palatino</option>
+                        </optgroup>
+                        <optgroup label="── 等宽字体 ──">
+                            <option value="'Courier New', Courier, monospace">Courier New</option>
+                        </optgroup>
+                        <optgroup label="── 手写 / 装饰体 ──">
+                            <option value="'Comic Sans MS', cursive">'Comic Sans MS</option>
+                            <option value="'Dancing Script', cursive">Dancing Script ✦</option>
+                            <option value="'Pacifico', cursive">Pacifico ✦</option>
+                            <option value="'Lobster', cursive">Lobster ✦</option>
+                            <option value="'Satisfy', cursive">Satisfy ✦</option>
+                            <option value="'Permanent Marker', cursive">Permanent Marker ✦</option>
+                            <option value="'Righteous', cursive">Righteous ✦</option>
+                        </optgroup>
+                        <optgroup label="── 中文字体 ──">
+                            <option value="'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif">微软雅黑</option>
+                            <option value="'SimSun', 'STSong', 'Noto Serif SC', serif">宋体</option>
+                            <option value="'SimHei', 'STHeiti', 'Noto Sans SC', sans-serif">黑体</option>
+                            <option value="'KaiTi', 'STKaiti', cursive">楷体</option>
+                            <option value="'FangSong', 'STFangsong', serif">仿宋</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>字体样式：</label>
+                    <div class="style-buttons">
+                        <button class="style-btn bold-btn" id="boldBtn" title="粗体 (Bold)">B</button>
+                        <button class="style-btn italic-btn" id="italicBtn" title="斜体 (Italic)">I</button>
+                        <button class="style-btn underline-btn" id="underlineBtn" title="下划线 (Underline)">U</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="amplitudeSlider"><span id="amplitudeLabel">波浪幅度</span>：<span id="amplitudeValue">40</span>px</label>
+                <input type="range" id="amplitudeSlider" min="0" max="100" value="40">
+            </div>
+
+            <div class="control-group" id="frequencyGroup">
+                <label for="frequencySlider">波浪频率：<span id="frequencyValue">0.020</span></label>
+                <input type="range" id="frequencySlider" min="5" max="50" value="20">
+            </div>
+
+            <div class="control-group">
+                <label for="spacingSlider">字符间距：<span id="spacingValue">20</span>px</label>
+                <input type="range" id="spacingSlider" min="10" max="50" value="20">
+            </div>
+
+            <div class="control-group">
+                <label for="fontSizeSlider">字体大小：<span id="fontSizeValue">24</span>px</label>
+                <input type="range" id="fontSizeSlider" min="12" max="48" value="24">
+            </div>
+        </div>
+
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // 高清渲染：物理像素 = 逻辑尺寸 × SCALE，CSS width:100% 自动同比缩放显示高度
+        const SCALE = 3;
+        const LOGICAL_WIDTH = 840;
+        canvas.width = LOGICAL_WIDTH * SCALE;
+
+        // 控件引用
+        const shapeSelect = document.getElementById('shapeSelect');
+        const textInput = document.getElementById('textInput');
+        const fontFamilySelect = document.getElementById('fontFamilySelect');
+        const boldBtn = document.getElementById('boldBtn');
+        const italicBtn = document.getElementById('italicBtn');
+        const underlineBtn = document.getElementById('underlineBtn');
+        const amplitudeSlider = document.getElementById('amplitudeSlider');
+        const frequencySlider = document.getElementById('frequencySlider');
+        const spacingSlider = document.getElementById('spacingSlider');
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+
+        const amplitudeLabel = document.getElementById('amplitudeLabel');
+        const amplitudeValue = document.getElementById('amplitudeValue');
+        const frequencyValue = document.getElementById('frequencyValue');
+        const spacingValue = document.getElementById('spacingValue');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+
+        // 字体样式状态
+        let isBold = false;
+        let isItalic = false;
+        let isUnderline = false;
+
+        // 构建 canvas font 字符串
+        const buildFont = (fontSize, fontFamily) => {
+            const parts = [];
+            if (isItalic) parts.push('italic');
+            if (isBold) parts.push('bold');
+            parts.push(`${fontSize}px`);
+            parts.push(fontFamily);
+            return parts.join(' ');
+        };
+
+        /**
+         * 在曲线上绘制单个字符（含下划线支持）
+         * @param {string} char - 字符
+         * @param {number} x - 画布坐标 x
+         * @param {number} y - 画布坐标 y
+         * @param {number} angle - 旋转角度（弧度）
+         * @param {string} fontStr - canvas font 字符串
+         * @param {number} fontSize - 字号（用于计算下划线偏移）
+         * @param {string} color - 填充颜色
+         */
+        const drawCharOnCurve = (char, x, y, angle, fontStr, color = '#333') => {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+
+            ctx.font = fontStr;
+            ctx.fillStyle = color;
+            ctx.textBaseline = 'middle';
+
+            const charWidth = ctx.measureText(char).width;
+            ctx.fillText(char, -charWidth / 2, 0);
+
+            ctx.restore();
+        };
+
+        /**
+         * 正弦波连续下划线：沿曲线切线方向向外偏移，逐像素采样生成连贯路径
+         */
+        const drawSineUnderline = (text, amplitude, frequency, spacing, startX, centerY, fontSize, color = '#333') => {
+            if (!text.trim()) return;
+
+            const offset = fontSize * 0.38;
+            const lineThickness = Math.max(1, fontSize / 16);
+            const xStart = startX;
+            const xEnd = startX + (text.length - 1) * spacing;
+
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineThickness;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+
+            let first = true;
+            for (let x = xStart; x <= xEnd + 0.5; x += 0.5) {
+                const cx = Math.min(x, xEnd);
+                const sinY = centerY + amplitude * Math.sin(frequency * cx);
+                // 精确切线角（atan2 保证大振幅时也正确）
+                const deriv = amplitude * frequency * Math.cos(frequency * cx);
+                const angle = Math.atan2(deriv, 1);
+                // 沿法线方向（垂直切线向下）偏移
+                const wx = cx - offset * Math.sin(angle);
+                const wy = sinY + offset * Math.cos(angle);
+
+                if (first) { ctx.moveTo(wx, wy); first = false; }
+                else { ctx.lineTo(wx, wy); }
+            }
+
+            ctx.stroke();
+            ctx.restore();
+        };
+
+        /**
+         * 圆弧连续下划线：绘制与文字同心的偏移弧段
+         * @param {boolean} isBottomArc - true = 底部弧（圆心在上方，下划线半径需增大）
+         */
+        const drawArcUnderline = (text, radius, arcAngle, centerX, centerY, fontSize, isBottomArc = false, color = '#333') => {
+            if (!text.trim()) return;
+
+            const offset = fontSize * 0.38;
+            // 顶部弧：圆心在下方，文字下方 = 向圆心靠近 = 半径减小
+            // 底部弧：圆心在上方，文字下方 = 远离圆心 = 半径增大
+            const underlineRadius = isBottomArc ? radius + offset : radius - offset;
+            const lineThickness = Math.max(1, fontSize / 16);
+
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineThickness;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            if (isBottomArc) {
+                // 底部弧字符范围在圆底部（ctx.arc 角度以 π/2 为中心）
+                ctx.arc(centerX, centerY, underlineRadius,
+                    Math.PI / 2 - arcAngle / 2,
+                    Math.PI / 2 + arcAngle / 2);
+            } else {
+                ctx.arc(centerX, centerY, underlineRadius,
+                    -Math.PI / 2 - arcAngle / 2,
+                    -Math.PI / 2 + arcAngle / 2);
+            }
+            ctx.stroke();
+            ctx.restore();
+        };
+
+        // ─── 正弦波浪 ───────────────────────────────────────────────────────────
+
+        /**
+         * 计算单行正弦波所需的画布高度
+         */
+        const getSineLineHeight = (amplitude, fontSize) => fontSize + amplitude * 2 + 50;
+
+        /**
+         * 绘制单行正弦波文字
+         * @param {string} text - 当前行文字
+         * @param {number} offsetY - 该行在画布中的垂直起点
+         */
+        const drawSineWaveLine = (text, amplitude, frequency, spacing, fontSize, fontFamily, offsetY) => {
+            const lineHeight = getSineLineHeight(amplitude, fontSize);
+            const centerY = offsetY + lineHeight / 2;
+            const fontStr = buildFont(fontSize, fontFamily);
+
+            ctx.font = fontStr;
+            const totalWidth = text.length * spacing;
+            const startX = Math.max(spacing, (LOGICAL_WIDTH - totalWidth) / 2);
+
+            for (let i = 0; i < text.length; i++) {
+                const x = startX + i * spacing;
+                const y = centerY + amplitude * Math.sin(frequency * x);
+                const angle = amplitude * frequency * Math.cos(frequency * x);
+                drawCharOnCurve(text[i], x, y, angle, fontStr);
+            }
+
+            // 整行连续下划线（在字符之上绘制，避免被字符遮挡，故放在字符循环之后）
+            if (isUnderline) {
+                drawSineUnderline(text, amplitude, frequency, spacing, startX, centerY, fontSize);
+            }
+
+            // 参考正弦曲线（淡色辅助线）
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.18)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            for (let x = 0; x < LOGICAL_WIDTH; x++) {
+                const y = centerY + amplitude * Math.sin(frequency * x);
+                x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        };
+
+        // ─── 圆弧曲线 ────────────────────────────────────────────────────────────
+
+        /**
+         * 根据文字和弯曲度计算该行所需的圆弧半径和高度
+         */
+        const getArcParams = (text, curvature, spacing) => {
+            const totalWidth = text.length * spacing;
+            let radius;
+            if (curvature === 0) {
+                radius = 100000;
+            } else {
+                radius = 500 - curvature * 4;
+                if (radius < 100) radius = 100;
+            }
+            const arcAngle = totalWidth / radius;
+            // arcAngle/2 超过 π（文字超过整圆）时 cos 回升会导致 arcHeight 缩小；
+            // 钳制到 π，使高度最大为直径 2×radius，不再因文字过多而缩减
+            const arcHeight = radius * (1 - Math.cos(Math.min(arcAngle / 2, Math.PI)));
+            return { radius, arcAngle, arcHeight };
+        };
+
+        const getArcLineHeight = (text, curvature, spacing, fontSize) => {
+            const { arcHeight } = getArcParams(text, curvature, spacing);
+            return fontSize + arcHeight + 50;
+        };
+
+        /**
+         * 绘制单行圆弧文字
+         * @param {string} text    - 当前行文字
+         * @param {number} offsetY - 该行在画布中的垂直起点
+         * @param {string} mode    - 'top' 顶部弧（笑脸）| 'bottom' 底部弧（哭脸）
+         */
+        const drawArcLine = (text, curvature, spacing, fontSize, fontFamily, offsetY, mode = 'top') => {
+            const { radius, arcAngle, arcHeight } = getArcParams(text, curvature, spacing);
+            const padding = 25;
+            const fontStr = buildFont(fontSize, fontFamily);
+            const centerX = LOGICAL_WIDTH / 2;
+            const isBottom = mode === 'bottom';
+
+            // 顶部弧：圆心在画布下方，文字在圆顶部
+            // 底部弧：圆心在画布上方（可为负坐标），文字悬挂在圆底部
+            const centerY = isBottom
+                ? offsetY + padding + arcHeight + fontSize / 2 - radius
+                : offsetY + padding + radius;
+
+            for (let i = 0; i < text.length; i++) {
+                const angle = -arcAngle / 2 + (i / (text.length - 1 || 1)) * arcAngle;
+                let x, y, rot;
+                if (isBottom) {
+                    // 底部弧：文字在圆下方，切线旋转方向取反
+                    x = centerX + radius * Math.sin(angle);
+                    y = centerY + radius * Math.cos(angle);
+                    rot = -angle;
+                } else {
+                    x = centerX + radius * Math.sin(angle);
+                    y = centerY - radius * Math.cos(angle);
+                    rot = angle;
+                }
+                drawCharOnCurve(text[i], x, y, rot, fontStr);
+            }
+
+            // 整行连续下划线
+            if (isUnderline) {
+                drawArcUnderline(text, radius, arcAngle, centerX, centerY, fontSize, isBottom);
+            }
+
+            // 参考圆弧（淡色辅助线）
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.18)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            if (isBottom) {
+                ctx.arc(centerX, centerY, radius,
+                    Math.PI / 2 - arcAngle / 2,
+                    Math.PI / 2 + arcAngle / 2);
+            } else {
+                ctx.arc(centerX, centerY, radius,
+                    -Math.PI / 2 - arcAngle / 2,
+                    -Math.PI / 2 + arcAngle / 2);
+            }
+            ctx.stroke();
+        };
+
+        // ─── 主绘制入口（支持多行）────────────────────────────────────────────────
+
+        const LINE_GAP = 10; // 多行之间的额外间距
+
+        const drawSineText = () => {
+            const shape = shapeSelect.value;
+            const rawText = textInput.value;
+            const lines = rawText.split('\n');
+            const amplitude = parseFloat(amplitudeSlider.value);
+            const frequency = parseFloat(frequencySlider.value) / 1000;
+            const spacing = parseFloat(spacingSlider.value);
+            const fontSize = parseFloat(fontSizeSlider.value);
+            const fontFamily = fontFamilySelect.value;
+
+            if (shape === 'sine') {
+                const lineHeight = getSineLineHeight(amplitude, fontSize);
+                const totalHeight = lineHeight * lines.length + LINE_GAP * (lines.length - 1);
+                canvas.height = Math.max(80, totalHeight) * SCALE;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.scale(SCALE, SCALE);
+
+                lines.forEach((line, index) => {
+                    const offsetY = index * (lineHeight + LINE_GAP);
+                    drawSineWaveLine(line || ' ', amplitude, frequency, spacing, fontSize, fontFamily, offsetY);
+                });
+            } else {
+                // 圆弧（顶部 / 底部）：逐行计算高度，累计 offsetY
+                const arcMode = shape === 'arc-bottom' ? 'bottom' : 'top';
+                const lineHeights = lines.map(line =>
+                    getArcLineHeight(line || ' ', amplitude, spacing, fontSize)
+                );
+                const totalHeight = lineHeights.reduce((sum, h) => sum + h, 0)
+                    + LINE_GAP * (lines.length - 1);
+                canvas.height = Math.max(80, totalHeight) * SCALE;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.scale(SCALE, SCALE);
+
+                let offsetY = 0;
+                lines.forEach((line, index) => {
+                    drawArcLine(line || ' ', amplitude, spacing, fontSize, fontFamily, offsetY, arcMode);
+                    offsetY += lineHeights[index] + LINE_GAP;
+                });
+            }
+        };
+
+        // ─── 更新显示值 ──────────────────────────────────────────────────────────
+
+        const updateValues = () => {
+            const shape = shapeSelect.value;
+
+            if (shape === 'sine') {
+                amplitudeLabel.textContent = '波浪幅度';
+                document.getElementById('frequencyGroup').style.display = 'flex';
+            } else {
+                amplitudeLabel.textContent = '弧度弯曲';
+                document.getElementById('frequencyGroup').style.display = 'none';
+            }
+
+
+            amplitudeValue.textContent = amplitudeSlider.value;
+            frequencyValue.textContent = (parseFloat(frequencySlider.value) / 1000).toFixed(3);
+            spacingValue.textContent = spacingSlider.value;
+            fontSizeValue.textContent = fontSizeSlider.value;
+        };
+
+        // ─── 事件绑定 ────────────────────────────────────────────────────────────
+
+        const handleStyleToggle = (state, btn, setter) => {
+            setter(!state);
+            btn.classList.toggle('active', !state);
+            drawSineText();
+        };
+
+        boldBtn.addEventListener('click', () => {
+            isBold = !isBold;
+            boldBtn.classList.toggle('active', isBold);
+            drawSineText();
+        });
+
+        italicBtn.addEventListener('click', () => {
+            isItalic = !isItalic;
+            italicBtn.classList.toggle('active', isItalic);
+            drawSineText();
+        });
+
+        underlineBtn.addEventListener('click', () => {
+            isUnderline = !isUnderline;
+            underlineBtn.classList.toggle('active', isUnderline);
+            drawSineText();
+        });
+
+        shapeSelect.addEventListener('change', () => { updateValues(); drawSineText(); });
+        textInput.addEventListener('input', drawSineText);
+        fontFamilySelect.addEventListener('change', drawSineText);
+
+        amplitudeSlider.addEventListener('input', () => { updateValues(); drawSineText(); });
+        frequencySlider.addEventListener('input', () => { updateValues(); drawSineText(); });
+        spacingSlider.addEventListener('input', () => { updateValues(); drawSineText(); });
+        fontSizeSlider.addEventListener('input', () => { updateValues(); drawSineText(); });
+
+        // ─── 初始化 ──────────────────────────────────────────────────────────────
+
+        updateValues();
+        drawSineText();
+    </script>
+</body>
+</html>

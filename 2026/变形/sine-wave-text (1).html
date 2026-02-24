@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正弦曲线文字排版</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .value-display {
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+            font-size: 14px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌊 正弦曲线文字排版</h1>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="textInput">输入文字：</label>
+                <input type="text" id="textInput" value="Hello World! 欢迎使用正弦曲线文字效果！" placeholder="输入你想要显示的文字">
+            </div>
+
+            <div class="control-group">
+                <label for="amplitudeSlider">波浪幅度：<span id="amplitudeValue">40</span>px</label>
+                <input type="range" id="amplitudeSlider" min="0" max="100" value="40">
+            </div>
+
+            <div class="control-group">
+                <label for="frequencySlider">波浪频率：<span id="frequencyValue">0.02</span></label>
+                <input type="range" id="frequencySlider" min="5" max="50" value="20">
+            </div>
+
+            <div class="control-group">
+                <label for="spacingSlider">字符间距：<span id="spacingValue">20</span>px</label>
+                <input type="range" id="spacingSlider" min="10" max="50" value="20">
+            </div>
+
+            <div class="control-group">
+                <label for="fontSizeSlider">字体大小：<span id="fontSizeValue">24</span>px</label>
+                <input type="range" id="fontSizeSlider" min="12" max="48" value="24">
+            </div>
+        </div>
+
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // 设置画布初始宽度
+        canvas.width = 840;
+
+        // 获取控制元素
+        const textInput = document.getElementById('textInput');
+        const amplitudeSlider = document.getElementById('amplitudeSlider');
+        const frequencySlider = document.getElementById('frequencySlider');
+        const spacingSlider = document.getElementById('spacingSlider');
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+
+        const amplitudeValue = document.getElementById('amplitudeValue');
+        const frequencyValue = document.getElementById('frequencyValue');
+        const spacingValue = document.getElementById('spacingValue');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+
+        // 绘制正弦曲线文字的函数
+        function drawSineText() {
+            // 获取参数值
+            const text = textInput.value;
+            // 波浪幅度（振幅），控制波峰的高度
+            const amplitude = parseFloat(amplitudeSlider.value);
+            // 波浪频率，控制波的密集程度（滑块为5-50，除以1000变成0.005-0.05）
+            const frequency = parseFloat(frequencySlider.value) / 1000;
+            const spacing = parseFloat(spacingSlider.value);
+            const fontSize = parseFloat(fontSizeSlider.value);
+
+            // 计算容器所需高度
+            // 高度 = 字体大小 + 上下波动幅度 + 额外边距
+            const padding = 20; // 上下边距
+            const requiredHeight = fontSize + (amplitude * 2) + (padding * 2);
+
+            // 动态设置画布高度
+            canvas.height = requiredHeight;
+
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 设置字体
+            ctx.font = `${fontSize}px Arial, sans-serif`;
+            ctx.fillStyle = '#333';
+            ctx.textBaseline = 'middle';
+
+            // 计算起始位置（居中）
+            const totalWidth = text.length * spacing;
+            const startX = (canvas.width - totalWidth) / 2;
+            const centerY = canvas.height / 2;
+
+            // 绘制每个字符
+            for (let i = 0; i < text.length; i++) {
+                const x = startX + i * spacing;
+                const y = centerY + amplitude * Math.sin(frequency * x);
+
+                ctx.save();
+                ctx.translate(x, y);
+
+                // 可选：让字符旋转以跟随曲线切线方向
+                const angle = amplitude * frequency * Math.cos(frequency * x);
+                ctx.rotate(angle);
+
+                ctx.fillText(text[i], 0, 0);
+                ctx.restore();
+            }
+
+            // 绘制参考的正弦曲线（可选）
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.2)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let x = 0; x < canvas.width; x++) {
+                const y = centerY + amplitude * Math.sin(frequency * x);
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+        }
+
+        // 更新显示值的函数
+        function updateValues() {
+            amplitudeValue.textContent = amplitudeSlider.value;
+            frequencyValue.textContent = (parseFloat(frequencySlider.value) / 1000).toFixed(3);
+            spacingValue.textContent = spacingSlider.value;
+            fontSizeValue.textContent = fontSizeSlider.value;
+        }
+
+        // 添加事件监听器
+        textInput.addEventListener('input', drawSineText);
+        amplitudeSlider.addEventListener('input', () => {
+            updateValues();
+            drawSineText();
+        });
+        frequencySlider.addEventListener('input', () => {
+            updateValues();
+            drawSineText();
+        });
+        spacingSlider.addEventListener('input', () => {
+            updateValues();
+            drawSineText();
+        });
+        fontSizeSlider.addEventListener('input', () => {
+            updateValues();
+            drawSineText();
+        });
+
+        // 初始化
+        updateValues();
+        drawSineText();
+    </script>
+</body>
+</html>

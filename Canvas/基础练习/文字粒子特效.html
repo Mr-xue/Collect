@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字粒子特效</title>
+    <link rel="stylesheet" href="design-tokens.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .canvas-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        canvas {
+            display: block;
+            border-radius: 8px;
+            cursor: crosshair;
+        }
+
+        .controls {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 16px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: auto;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <h1>✨ 文字粒子特效</h1>
+
+    <div class="canvas-wrapper">
+        <canvas id="particleCanvas"></canvas>
+    </div>
+
+    <div class="controls">
+        <div class="form-group">
+            <label for="particleText">文字内容</label>
+            <input type="text" id="particleText" value="粒子特效" style="width: 200px;">
+        </div>
+
+        <div class="form-group">
+            <label for="particleSize">粒子大小</label>
+            <input type="number" id="particleSize" value="3" min="1" max="10" style="width: 80px;">
+        </div>
+
+        <div class="form-group">
+            <label for="particleGap">采样间隔</label>
+            <input type="number" id="particleGap" value="4" min="2" max="10" style="width: 80px;">
+        </div>
+
+        <div class="form-group">
+            <label for="particleSpeed">运动速度</label>
+            <input type="number" id="particleSpeed" value="5" min="1" max="20" style="width: 80px;">
+        </div>
+
+        <div class="form-group">
+            <label for="particleColor">粒子颜色</label>
+            <input type="color" id="particleColor" value="#667eea">
+        </div>
+
+        <div class="form-group">
+            <label for="interactionMode">交互模式</label>
+            <select id="interactionMode" style="width: 120px;">
+                <option value="repel">排斥</option>
+                <option value="attract">吸引</option>
+                <option value="none">无</option>
+            </select>
+        </div>
+
+        <button id="generateBtn">生成粒子</button>
+        <button id="explodeBtn">爆炸效果</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const width = 800;
+        const height = 400;
+        canvas.width = width;
+        canvas.height = height;
+
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+
+        // 获取控件元素
+        const particleText = document.getElementById('particleText');
+        const particleSize = document.getElementById('particleSize');
+        const particleGap = document.getElementById('particleGap');
+        const particleSpeed = document.getElementById('particleSpeed');
+        const particleColor = document.getElementById('particleColor');
+        const interactionMode = document.getElementById('interactionMode');
+        const generateBtn = document.getElementById('generateBtn');
+        const explodeBtn = document.getElementById('explodeBtn');
+
+        // 鼠标位置
+        let mouse = { x: null, y: null, radius: 80 };
+
+        // 粒子数组
+        let particles = [];
+        let animationId = null;
+
+        // 粒子类
+        class Particle {
+            constructor(x, y, targetX, targetY) {
+                this.x = x;
+                this.y = y;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.size = parseInt(particleSize.value);
+                this.baseX = x;
+                this.baseY = y;
+                this.density = (Math.random() * 30) + 1;
+                this.vx = 0;
+                this.vy = 0;
+                this.friction = 0.92;
+                this.ease = 0.08;
+                this.exploded = false;
+            }
+
+            draw() {
+                ctx.fillStyle = particleColor.value;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            update() {
+                const mode = interactionMode.value;
+                const speed = parseInt(particleSpeed.value);
+
+                if (mode !== 'none' && mouse.x !== null && mouse.y !== null) {
+                    const dx = mouse.x - this.x;
+                    const dy = mouse.y - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < mouse.radius) {
+                        const forceDirectionX = dx / distance;
+                        const forceDirectionY = dy / distance;
+                        const force = (mouse.radius - distance) / mouse.radius;
+
+                        if (mode === 'repel') {
+                            this.vx -= forceDirectionX * force * speed;
+                            this.vy -= forceDirectionY * force * speed;
+                        } else if (mode === 'attract') {
+                            this.vx += forceDirectionX * force * speed;
+                            this.vy += forceDirectionY * force * speed;
+                        }
+                    }
+                }
+
+                if (!this.exploded) {
+                    // 回到目标位置
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+
+                    this.vx += dx * this.ease;
+                    this.vy += dy * this.ease;
+                }
+
+                // 应用摩擦力
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+
+                // 更新位置
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+
+            explode() {
+                const angle = Math.random() * Math.PI * 2;
+                const force = Math.random() * 30 + 10;
+                this.vx += Math.cos(angle) * force;
+                this.vy += Math.sin(angle) * force;
+                this.exploded = true;
+
+                // 延时恢复
+                setTimeout(() => {
+                    this.exploded = false;
+                }, 2000);
+            }
+        }
+
+        // 从文字创建粒子
+        function createParticlesFromText(text) {
+            // 创建临时canvas用于获取文字像素数据
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = width * dpr;
+            tempCanvas.height = height * dpr;
+            tempCtx.scale(dpr, dpr);
+
+            // 在临时canvas上绘制文字
+            tempCtx.fillStyle = particleColor.value;
+            tempCtx.font = 'bold 120px sans-serif';
+            tempCtx.textAlign = 'center';
+            tempCtx.textBaseline = 'middle';
+            tempCtx.fillText(text, width / 2, height / 2);
+
+            // 获取像素数据
+            const imageData = tempCtx.getImageData(0, 0, width * dpr, height * dpr);
+            const data = imageData.data;
+            const gap = parseInt(particleGap.value);
+
+            // 清空主canvas
+            ctx.clearRect(0, 0, width, height);
+
+            particles = [];
+
+            // 扫描像素数据创建粒子
+            for (let y = 0; y < height * dpr; y += gap * dpr) {
+                for (let x = 0; x < width * dpr; x += gap * dpr) {
+                    const index = (y * width * dpr + x) * 4;
+                    const alpha = data[index + 3];
+
+                    if (alpha > 128) {
+                        // 转换为逻辑坐标
+                        const targetX = x / dpr;
+                        const targetY = y / dpr;
+                        // 从随机位置开始
+                        const startX = Math.random() * width;
+                        const startY = Math.random() * height;
+
+                        particles.push(new Particle(startX, startY, targetX, targetY));
+                    }
+                }
+            }
+        }
+
+        // 动画循环
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // 生成粒子
+        function generateParticles() {
+            // 取消之前的动画
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+
+            // 清空画布
+            ctx.clearRect(0, 0, width, height);
+
+            // 创建新粒子
+            const text = particleText.value || '粒子特效';
+            createParticlesFromText(text);
+
+            // 开始新动画
+            animate();
+        }
+
+        // 爆炸效果
+        function explodeEffect() {
+            particles.forEach(particle => {
+                particle.explode();
+            });
+        }
+
+        // 事件监听
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = (e.clientX - rect.left) * (canvas.width / rect.width) / dpr;
+            mouse.y = (e.clientY - rect.top) * (canvas.height / rect.height) / dpr;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        generateBtn.addEventListener('click', generateParticles);
+        explodeBtn.addEventListener('click', explodeEffect);
+
+        particleSize.addEventListener('change', () => {
+            particles.forEach(p => p.size = parseInt(particleSize.value));
+        });
+
+        particleSpeed.addEventListener('change', () => {});
+
+        // 初始生成
+        generateParticles();
+    </script>
+</body>
+</html>

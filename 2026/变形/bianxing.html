@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字路径变形工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+        }
+
+        .canvas-section {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f8f9fa;
+        }
+
+        .control-section {
+            width: 350px;
+            padding: 30px;
+            background: white;
+            border-left: 1px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        canvas {
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        label {
+            font-size: 14px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        textarea {
+            padding: 10px 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .shape-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .shape-btn {
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .shape-btn:hover {
+            border-color: #667eea;
+            background: #f0f1ff;
+            transform: translateY(-2px);
+        }
+
+        .shape-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .shape-icon {
+            width: 40px;
+            height: 30px;
+            position: relative;
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slider-value {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e9ecef;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+            transition: transform 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+        }
+
+        .reset-btn {
+            padding: 12px 24px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .reset-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 968px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .control-section {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid #e9ecef;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="canvas-section">
+            <h2>文字路径变形</h2>
+            <canvas id="textCanvas" width="700" height="300"></canvas>
+        </div>
+
+        <div class="control-section">
+            <div class="control-group">
+                <label>文字内容</label>
+                <textarea id="textInput" placeholder="请输入文字...">文字变形测试</textarea>
+            </div>
+
+            <div class="control-group">
+                <label>变形样式</label>
+                <div class="shape-grid">
+                    <button class="shape-btn" data-shape="wave">
+                        <svg class="shape-icon" viewBox="0 0 40 30" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M 2 15 Q 10 5, 20 15 T 38 15"/>
+                        </svg>
+                        <span>波浪</span>
+                    </button>
+                    <button class="shape-btn" data-shape="arch-up">
+                        <svg class="shape-icon" viewBox="0 0 40 30" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M 2 25 Q 20 5, 38 25"/>
+                        </svg>
+                        <span>上弧</span>
+                    </button>
+                    <button class="shape-btn" data-shape="arch-down">
+                        <svg class="shape-icon" viewBox="0 0 40 30" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M 2 5 Q 20 25, 38 5"/>
+                        </svg>
+                        <span>下弧</span>
+                    </button>
+                    <button class="shape-btn" data-shape="bulge">
+                        <svg class="shape-icon" viewBox="0 0 40 30" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M 2 15 Q 20 25, 38 15"/>
+                        </svg>
+                        <span>凸形</span>
+                    </button>
+                    <button class="shape-btn" data-shape="concave">
+                        <svg class="shape-icon" viewBox="0 0 40 30" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M 2 15 Q 20 5, 38 15"/>
+                        </svg>
+                        <span>凹形</span>
+                    </button>
+                    <button class="shape-btn" data-shape="flag">
+                        <svg class="shape-icon" viewBox="0 0 40 30" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M 2 15 Q 10 5, 20 15 Q 30 25, 38 15"/>
+                        </svg>
+                        <span>旗形</span>
+                    </button>
+                    <button class="shape-btn" data-shape="fish">
+                        <svg class="shape-icon" viewBox="0 0 40 30" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M 2 15 Q 15 10, 25 15 Q 15 20, 2 15"/>
+                        </svg>
+                        <span>鱼形</span>
+                    </button>
+                    <button class="shape-btn active" data-shape="none">
+                        <svg class="shape-icon" viewBox="0 0 40 30" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="2" y1="15" x2="38" y2="15"/>
+                        </svg>
+                        <span>无</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <label>强度</label>
+                        <span class="slider-value" id="strengthValue">50</span>
+                    </div>
+                    <input type="range" id="strengthSlider" min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <label>字体大小</label>
+                        <span class="slider-value" id="fontSizeValue">48</span>
+                    </div>
+                    <input type="range" id="fontSizeSlider" min="20" max="120" value="48">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <label>字间距</label>
+                        <span class="slider-value" id="spacingValue">0</span>
+                    </div>
+                    <input type="range" id="spacingSlider" min="-20" max="50" value="0">
+                </div>
+            </div>
+
+            <button class="reset-btn" id="resetBtn">重置所有设置</button>
+        </div>
+    </div>
+
+    <script>
+        // Canvas 和上下文
+        const canvas = document.getElementById('textCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 控件元素
+        const textInput = document.getElementById('textInput');
+        const strengthSlider = document.getElementById('strengthSlider');
+        const strengthValue = document.getElementById('strengthValue');
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const spacingSlider = document.getElementById('spacingSlider');
+        const spacingValue = document.getElementById('spacingValue');
+        const shapeButtons = document.querySelectorAll('.shape-btn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // 当前状态
+        let currentShape = 'none';
+        let strength = 50;
+        let fontSize = 48;
+        let spacing = 0;
+
+        // 初始化
+        const init = () => {
+            updateCanvas();
+            attachEventListeners();
+        };
+
+        // 绑定事件监听器
+        const attachEventListeners = () => {
+            textInput.addEventListener('input', updateCanvas);
+            strengthSlider.addEventListener('input', (e) => {
+                strength = parseInt(e.target.value);
+                strengthValue.textContent = strength;
+                updateCanvas();
+            });
+            fontSizeSlider.addEventListener('input', (e) => {
+                fontSize = parseInt(e.target.value);
+                fontSizeValue.textContent = fontSize;
+                updateCanvas();
+            });
+            spacingSlider.addEventListener('input', (e) => {
+                spacing = parseInt(e.target.value);
+                spacingValue.textContent = spacing;
+                updateCanvas();
+            });
+            shapeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    shapeButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentShape = btn.dataset.shape;
+                    updateCanvas();
+                });
+            });
+            resetBtn.addEventListener('click', resetSettings);
+        };
+
+        // 重置设置
+        const resetSettings = () => {
+            textInput.value = '文字变形测试';
+            strengthSlider.value = 50;
+            strength = 50;
+            strengthValue.textContent = 50;
+            fontSizeSlider.value = 48;
+            fontSize = 48;
+            fontSizeValue.textContent = 48;
+            spacingSlider.value = 0;
+            spacing = 0;
+            spacingValue.textContent = 0;
+            shapeButtons.forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-shape="none"]').classList.add('active');
+            currentShape = 'none';
+            updateCanvas();
+        };
+
+        // 根据不同形状计算路径上的点和变形参数
+        const getPathPoint = (progress, shape, strength) => {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const normalizedProgress = progress - 0.5; // -0.5 到 0.5
+            const intensity = strength / 100;
+
+            let x = progress * canvas.width;
+            let y = centerY;
+            let rotation = 0;
+            let scaleX = 1;
+            let scaleY = 1;
+            let skewX = 0;
+
+            // 使用微小的增量来计算导数（切线方向）
+            const delta = 0.001;
+            let dy_dx = 0; // 斜率
+
+            switch (shape) {
+                case 'wave':
+                    // 波浪形：使用正弦波
+                    y = centerY + Math.sin(progress * Math.PI * 4) * 60 * intensity;
+                    dy_dx = Math.cos(progress * Math.PI * 4) * Math.PI * 4 * 60 * intensity / canvas.width;
+                    rotation = Math.atan(dy_dx) * (180 / Math.PI);
+
+                    // 根据曲线的曲率添加拉伸效果
+                    const waveCurvature = Math.abs(Math.sin(progress * Math.PI * 4));
+                    scaleY = 1 + waveCurvature * 0.3 * intensity;
+                    scaleX = 1 - waveCurvature * 0.2 * intensity;
+                    break;
+
+                case 'arch-up':
+                    // 上弧形：抛物线向上
+                    y = centerY - Math.pow(normalizedProgress, 2) * 200 * intensity;
+                    dy_dx = -2 * normalizedProgress * 200 * intensity / canvas.width;
+                    rotation = Math.atan(dy_dx) * (180 / Math.PI);
+
+                    // 两端拉伸，中间压缩
+                    scaleY = 1 + Math.abs(normalizedProgress) * 0.4 * intensity;
+                    scaleX = 1 - Math.abs(normalizedProgress) * 0.3 * intensity;
+                    break;
+
+                case 'arch-down':
+                    // 下弧形：抛物线向下
+                    y = centerY + Math.pow(normalizedProgress, 2) * 200 * intensity;
+                    dy_dx = 2 * normalizedProgress * 200 * intensity / canvas.width;
+                    rotation = Math.atan(dy_dx) * (180 / Math.PI);
+
+                    scaleY = 1 + Math.abs(normalizedProgress) * 0.4 * intensity;
+                    scaleX = 1 - Math.abs(normalizedProgress) * 0.3 * intensity;
+                    break;
+
+                case 'bulge':
+                    // 凸形：中间凸出
+                    y = centerY + Math.sin(progress * Math.PI) * 80 * intensity;
+                    dy_dx = Math.cos(progress * Math.PI) * Math.PI * 80 * intensity / canvas.width;
+                    rotation = Math.atan(dy_dx) * (180 / Math.PI);
+
+                    // 中间拉伸效果
+                    const bulgeFactor = Math.sin(progress * Math.PI);
+                    scaleY = 1 + bulgeFactor * 0.5 * intensity;
+                    scaleX = 1 - bulgeFactor * 0.2 * intensity;
+                    break;
+
+                case 'concave':
+                    // 凹形：中间凹陷
+                    y = centerY - Math.sin(progress * Math.PI) * 80 * intensity;
+                    dy_dx = -Math.cos(progress * Math.PI) * Math.PI * 80 * intensity / canvas.width;
+                    rotation = Math.atan(dy_dx) * (180 / Math.PI);
+
+                    const concaveFactor = Math.sin(progress * Math.PI);
+                    scaleY = 1 - concaveFactor * 0.3 * intensity;
+                    scaleX = 1 + concaveFactor * 0.2 * intensity;
+                    break;
+
+                case 'flag':
+                    // 旗形：波浪旗帜效果
+                    y = centerY + Math.sin(progress * Math.PI * 2) * 60 * intensity;
+                    dy_dx = Math.cos(progress * Math.PI * 2) * Math.PI * 2 * 60 * intensity / canvas.width;
+                    rotation = Math.atan(dy_dx) * (180 / Math.PI);
+
+                    // 旗帜飘动的拉伸效果
+                    const flagWave = Math.sin(progress * Math.PI * 2);
+                    scaleX = 1 + Math.abs(flagWave) * 0.3 * intensity;
+                    skewX = flagWave * 0.2 * intensity;
+                    break;
+
+                case 'fish':
+                    // 鱼形：两端收缩，中间膨胀
+                    const fishCurve = Math.sin(progress * Math.PI);
+                    y = centerY + fishCurve * 50 * intensity;
+                    dy_dx = Math.cos(progress * Math.PI) * Math.PI * 50 * intensity / canvas.width;
+                    rotation = Math.atan(dy_dx) * (180 / Math.PI);
+
+                    // 鱼形的膨胀效果
+                    scaleY = 1 + fishCurve * 0.6 * intensity;
+                    scaleX = 1 - fishCurve * 0.3 * intensity;
+                    break;
+
+                case 'none':
+                default:
+                    // 无变形：直线
+                    y = centerY;
+                    rotation = 0;
+                    scaleX = 1;
+                    scaleY = 1;
+                    skewX = 0;
+                    break;
+            }
+
+            return { x, y, rotation, scaleX, scaleY, skewX };
+        };
+
+        // 更新 Canvas 绘制
+        const updateCanvas = () => {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const text = textInput.value || ' ';
+            const chars = text.split('');
+
+            // 设置字体
+            ctx.font = `bold ${fontSize}px "PingFang SC", "Microsoft YaHei", sans-serif`;
+            ctx.fillStyle = '#2c3e50';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // 测量总宽度以计算起始位置（包含字间距）
+            let totalWidth = 0;
+            const charWidths = [];
+            chars.forEach((char) => {
+                const charWidth = ctx.measureText(char).width;
+                charWidths.push(charWidth);
+                totalWidth += charWidth + spacing;
+            });
+            totalWidth -= spacing; // 最后一个字符后不加间距
+
+            let currentWidth = 0;
+
+            // 绘制每个字符
+            chars.forEach((char, index) => {
+                const charWidth = charWidths[index];
+                currentWidth += charWidth / 2;
+
+                // 计算当前字符的进度 (0 到 1)
+                const progress = totalWidth > 0 ? currentWidth / totalWidth : 0.5;
+
+                // 获取路径上的点、旋转角度和变形参数
+                const { x, y, rotation, scaleX, scaleY, skewX } = getPathPoint(progress, currentShape, strength);
+
+                // 保存当前状态
+                ctx.save();
+
+                // 移动到字符位置
+                ctx.translate(x, y);
+
+                // 旋转
+                ctx.rotate((rotation * Math.PI) / 180);
+
+                // 应用变形：缩放和倾斜
+                // 使用 transform 矩阵来同时应用缩放和倾斜
+                // transform(scaleX, skewY, skewX, scaleY, translateX, translateY)
+                ctx.transform(scaleX, 0, Math.tan(skewX), scaleY, 0, 0);
+
+                // 绘制字符
+                ctx.fillText(char, 0, 0);
+
+                // 恢复状态
+                ctx.restore();
+
+                currentWidth += charWidth / 2 + spacing;
+            });
+        };
+
+        // 启动应用
+        init();
+    </script>
+</body>
+</html>
