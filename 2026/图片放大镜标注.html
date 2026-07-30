@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片放大镜</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: radial-gradient(ellipse at top, #131a2e 0%, #0a0e1a 60%);
+      color: #e0e6ed;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #5eead4, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #7a8599;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    /* ---- 控制面板 ---- */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      background: rgba(30, 38, 56, 0.6);
+      border: 1px solid rgba(94, 234, 212, 0.15);
+      border-radius: 12px;
+      padding: 14px 22px;
+      margin-bottom: 28px;
+      backdrop-filter: blur(8px);
+    }
+
+    .controls label {
+      font-size: 14px;
+      color: #a0aec0;
+      white-space: nowrap;
+    }
+
+    .controls input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 160px;
+      height: 6px;
+      background: linear-gradient(90deg, #5eead4, #818cf8);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .controls input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid #5eead4;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(94, 234, 212, 0.5);
+      transition: transform 0.15s;
+    }
+
+    .controls input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .controls input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid #5eead4;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(94, 234, 212, 0.5);
+    }
+
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #zoomValue {
+      font-size: 16px;
+      font-weight: 700;
+      color: #5eead4;
+      min-width: 52px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .divider {
+      width: 1px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* 清除按钮 */
+    .btn-clear {
+      padding: 7px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      background: rgba(248, 113, 113, 0.1);
+      color: #f87171;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-clear:hover:not(:disabled) {
+      background: rgba(248, 113, 113, 0.2);
+      border-color: rgba(248, 113, 113, 0.5);
+    }
+
+    .btn-clear:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .pin-count {
+      font-size: 13px;
+      color: #fbbf24;
+      min-width: 48px;
+    }
+
+    /* 模式切换按钮组 */
+    .mode-toggle {
+      display: flex;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      padding: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .mode-btn {
+      padding: 6px 14px;
+      border: none;
+      background: transparent;
+      color: #7a8599;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .mode-btn.active {
+      background: linear-gradient(135deg, rgba(94, 234, 212, 0.2), rgba(129, 140, 248, 0.2));
+      color: #5eead4;
+      box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.3);
+    }
+
+    /* 普通模式：恢复默认光标 */
+    .image-wrapper.normal-mode {
+      cursor: default;
+    }
+
+    /* 图片上模式标签 */
+    .mode-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      font-size: 12px;
+      color: #5eead4;
+      background: rgba(10, 14, 26, 0.8);
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(94, 234, 212, 0.2);
+      z-index: 8;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+      transition: all 0.3s;
+    }
+
+    .mode-badge.normal {
+      color: #a0aec0;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* ---- 图片容器 ---- */
+    .image-wrapper {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                  0 0 0 1px rgba(94, 234, 212, 0.1);
+      cursor: none;
+      max-width: 100%;
+    }
+
+    .image-wrapper img {
+      display: block;
+      width: 100%;
+      height: auto;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* ---- 浮动放大镜 (跟随鼠标) ---- */
+    .magnifier {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      border: 3px solid rgba(94, 234, 212, 0.8);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
+                  0 8px 32px rgba(0, 0, 0, 0.6),
+                  0 0 24px rgba(94, 234, 212, 0.3),
+                  inset 0 0 0 2px rgba(255, 255, 255, 0.05);
+      background-repeat: no-repeat;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 10;
+    }
+
+    .magnifier.active {
+      opacity: 1;
+    }
+
+    /* 浮动放大镜十字准星 */
+    .magnifier::before,
+    .magnifier::after {
+      content: '';
+      position: absolute;
+      background: rgba(94, 234, 212, 0.4);
+      pointer-events: none;
+    }
+
+    .magnifier::before {
+      width: 1px; height: 20px;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .magnifier::after {
+      width: 20px; height: 1px;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* ---- 固定放大镜 ---- */
+    .magnifier.pinned {
+      opacity: 1;
+      border-color: rgba(251, 191, 36, 0.85);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
+                  0 6px 24px rgba(0, 0, 0, 0.5),
+                  0 0 20px rgba(251, 191, 36, 0.25),
+                  inset 0 0 0 2px rgba(255, 255, 255, 0.05);
+      pointer-events: none;
+      z-index: 9;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  opacity 0.2s ease;
+      animation: pinAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes pinAppear {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .magnifier.pinned.removing {
+      animation: pinDisappear 0.2s ease forwards;
+    }
+
+    @keyframes pinDisappear {
+      to { transform: scale(0); opacity: 0; }
+    }
+
+    /* 固定放大镜十字准星 (琥珀色) */
+    .magnifier.pinned::before,
+    .magnifier.pinned::after {
+      background: rgba(251, 191, 36, 0.4);
+    }
+
+    /* 固定放大镜删除按钮 */
+    .pin-delete {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #1a1f2e;
+      border: 2px solid rgba(251, 191, 36, 0.8);
+      color: #fbbf24;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      line-height: 1;
+      padding: 0;
+      transition: all 0.2s;
+      font-family: monospace;
+    }
+
+    .pin-delete:hover {
+      background: #fbbf24;
+      color: #1a1f2e;
+      transform: scale(1.2);
+      border-color: #fbbf24;
+    }
+
+    /* 固定放大镜缩放标签 */
+    .pin-label {
+      position: absolute;
+      bottom: -26px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: #fbbf24;
+      background: rgba(26, 31, 46, 0.9);
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    /* ---- 底部提示 ---- */
+    .tips {
+      margin-top: 24px;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .tip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #6b7689;
+    }
+
+    .tip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(94, 234, 212, 0.08);
+      border: 1px solid rgba(94, 234, 212, 0.15);
+      font-size: 14px;
+    }
+
+    .tip-icon.amber {
+      background: rgba(251, 191, 36, 0.08);
+      border-color: rgba(251, 191, 36, 0.15);
+    }
+
+    /* 加载状态 */
+    .loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0e1a;
+      color: #5eead4;
+      font-size: 14px;
+      z-index: 5;
+    }
+
+    .loading.hidden { display: none; }
+
+    .loading spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(94, 234, 212, 0.2);
+      border-top-color: #5eead4;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    /* 数值输入框 */
+    .num-input {
+      width: 56px;
+      height: 28px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(94, 234, 212, 0.2);
+      border-radius: 6px;
+      color: #5eead4;
+      font-size: 13px;
+      text-align: center;
+      outline: none;
+      font-variant-numeric: tabular-nums;
+    }
+    .num-input:focus {
+      border-color: rgba(94, 234, 212, 0.5);
+      box-shadow: 0 0 0 2px rgba(94, 234, 212, 0.1);
+    }
+    .num-input::-webkit-inner-spin-button,
+    .num-input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .unit-label {
+      font-size: 12px;
+      color: #7a8599;
+    }
+
+    /* 下载按钮 */
+    .btn-download {
+      padding: 7px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(94, 234, 212, 0.3);
+      background: rgba(94, 234, 212, 0.1);
+      color: #5eead4;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-download:hover {
+      background: rgba(94, 234, 212, 0.2);
+      border-color: rgba(94, 234, 212, 0.5);
+    }
+
+    /* 中心预览放大镜 */
+    .preview-magnifier {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.7);
+      border-radius: 50%;
+      border: 3px solid rgba(129, 140, 248, 0.85);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
+                  0 8px 32px rgba(0, 0, 0, 0.6),
+                  0 0 30px rgba(129, 140, 248, 0.4);
+      background-repeat: no-repeat;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 11;
+      transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .preview-magnifier.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .preview-magnifier::before,
+    .preview-magnifier::after {
+      content: '';
+      position: absolute;
+      background: rgba(129, 140, 248, 0.4);
+    }
+    .preview-magnifier::before {
+      width: 1px; height: 20px;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .preview-magnifier::after {
+      width: 20px; height: 1px;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .preview-label {
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: #818cf8;
+      background: rgba(10, 14, 26, 0.9);
+      padding: 3px 10px;
+      border-radius: 5px;
+      border: 1px solid rgba(129, 140, 248, 0.2);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <h1>🔍 图片放大镜</h1>
+  <p class="subtitle">悬停查看放大 · 点击图片固定放大区域 · 滑块/输入框调节大小 · 可切换模式 · 支持下载</p>
+
+  <!-- 控制面板 -->
+  <div class="controls">
+    <!-- 模式切换 -->
+    <div class="ctrl-group">
+      <label>模式</label>
+      <div class="mode-toggle" id="modeToggle">
+        <button class="mode-btn active" data-mode="magnify">🔍 放大标注</button>
+        <button class="mode-btn" data-mode="normal">👁️ 普通</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="ctrl-group">
+      <label>放大倍率</label>
+      <input type="range" min="2" max="8" step="0.5" value="3" id="zoomSlider">
+      <span id="zoomValue">3.0x</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="ctrl-group">
+      <label>区域大小</label>
+      <input type="range" min="100" max="350" step="10" value="200" id="lensSlider">
+      <input type="number" min="100" max="350" step="10" value="200" id="lensNumInput" class="num-input">
+      <span class="unit-label">px</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="ctrl-group">
+      <button class="btn-download" id="downloadBtn">⬇ 下载图片</button>
+      <button class="btn-clear" id="clearBtn" disabled>清除全部固定</button>
+      <span class="pin-count" id="pinCount">已固定 0 个</span>
+    </div>
+  </div>
+
+  <!-- 图片 + 放大镜 -->
+  <div class="image-wrapper" id="wrapper">
+    <div class="mode-badge" id="modeBadge">🔍 放大标注模式</div>
+    <img id="image" src="https://picsum.photos/seed/magnifier2026/1400/900" alt="示例图片" crossorigin="anonymous">
+    <div class="magnifier" id="magnifier"></div>
+    <div class="preview-magnifier" id="previewMagnifier"><span class="preview-label" id="previewLabel">倍率 3.0x · 大小 200px</span></div>
+    <div class="loading" id="loading"><spinner></spinner>图片加载中...</div>
+  </div>
+
+  <!-- 操作提示 -->
+  <div class="tips">
+    <div class="tip">
+      <span class="tip-icon">🔀</span>
+      <span>切换模式 → 放大标注 / 普通</span>
+    </div>
+    <div class="tip">
+      <span class="tip-icon">🖱️</span>
+      <span>移动鼠标 → 浮动放大镜跟随（放大标注模式）</span>
+    </div>
+    <div class="tip">
+      <span class="tip-icon amber">📌</span>
+      <span>点击图片 → 固定当前放大区域</span>
+    </div>
+    <div class="tip">
+      <span class="tip-icon amber">✕</span>
+      <span>点击 × → 删除单个固定区域</span>
+    </div>
+    <div class="tip">
+      <span class="tip-icon">📜</span>
+      <span>滚轮 → 调节放大倍率</span>
+    </div>
+    <div class="tip">
+      <span class="tip-icon">⬇</span>
+      <span>下载按钮 → 保存图片（含放大镜标注）</span>
+    </div>
+  </div>
+
+  <script>
+    const img         = document.getElementById('image');
+    const magnifier   = document.getElementById('magnifier');
+    const wrapper     = document.getElementById('wrapper');
+    const loading     = document.getElementById('loading');
+    const zoomSlider  = document.getElementById('zoomSlider');
+    const zoomValue   = document.getElementById('zoomValue');
+    const lensSlider  = document.getElementById('lensSlider');
+    const lensNumInput= document.getElementById('lensNumInput');
+    const clearBtn    = document.getElementById('clearBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const pinCountEl  = document.getElementById('pinCount');
+    const modeBadge   = document.getElementById('modeBadge');
+    const previewMagnifier = document.getElementById('previewMagnifier');
+    const previewLabel     = document.getElementById('previewLabel');
+
+    // ---- 状态 ----
+    let zoomLevel = 3;
+    let lensSize  = 200;
+    let lastMouseX = 0, lastMouseY = 0;
+    let pins = [];        // [{ id, xRatio, yRatio, zoom, element, labelEl }]
+    let pinIdCounter = 0;
+    let isMagnifyMode = true;  // true=放大标注模式, false=普通模式
+
+    // ---- 图片加载 ----
+    img.addEventListener('load', () => {
+      loading.classList.add('hidden');
+      renderAllPins();
+    });
+
+    img.addEventListener('error', () => {
+      loading.innerHTML = '⚠️ 图片加载失败，请检查网络';
+    });
+
+    // ---- 工具函数 ----
+    function getImgRect() {
+      return img.getBoundingClientRect();
+    }
+
+    function getWrapperRect() {
+      return wrapper.getBoundingClientRect();
+    }
+
+    // 渲染单个固定放大镜
+    function renderPin(pin) {
+      const rect = getImgRect();
+      const wRect = getWrapperRect();
+      const el = pin.element;
+
+      const mx = pin.xRatio * rect.width;
+      const my = pin.yRatio * rect.height;
+
+      // 位置：放大镜中心对准目标点
+      const left = mx + (rect.left - wRect.left) - lensSize / 2;
+      const top  = my + (rect.top  - wRect.top)  - lensSize / 2;
+
+      el.style.left = left + 'px';
+      el.style.top  = top + 'px';
+      el.style.width  = lensSize + 'px';
+      el.style.height = lensSize + 'px';
+
+      // 背景图
+      el.style.backgroundImage   = `url("${img.src}")`;
+      el.style.backgroundSize    = `${rect.width * pin.zoom}px ${rect.height * pin.zoom}px`;
+      const bgX = -(mx * pin.zoom - lensSize / 2);
+      const bgY = -(my * pin.zoom - lensSize / 2);
+      el.style.backgroundPosition = `${bgX}px ${bgY}px`;
+    }
+
+    function renderAllPins() {
+      pins.forEach(renderPin);
+    }
+
+    // 创建固定放大镜
+    function createPin(xRatio, yRatio, zoom) {
+      const id = ++pinIdCounter;
+      const el = document.createElement('div');
+      el.className = 'magnifier pinned';
+
+      // 删除按钮
+      const delBtn = document.createElement('button');
+      delBtn.className = 'pin-delete';
+      delBtn.innerHTML = '×';
+      delBtn.title = '删除此固定区域';
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removePin(id);
+      });
+      el.appendChild(delBtn);
+
+      wrapper.appendChild(el);
+
+      const pin = { id, xRatio, yRatio, zoom, element: el };
+      pins.push(pin);
+      renderPin(pin);
+      updatePinUI();
+    }
+
+    // 删除固定放大镜
+    function removePin(id) {
+      const idx = pins.findIndex(p => p.id === id);
+      if (idx === -1) return;
+      const pin = pins[idx];
+      pin.element.classList.add('removing');
+      pin.element.addEventListener('animationend', () => {
+        pin.element.remove();
+      }, { once: true });
+      pins.splice(idx, 1);
+      updatePinUI();
+    }
+
+    // 清除全部
+    function clearAllPins() {
+      pins.forEach(pin => {
+        pin.element.classList.add('removing');
+        pin.element.addEventListener('animationend', () => {
+          pin.element.remove();
+        }, { once: true });
+      });
+      pins = [];
+      updatePinUI();
+    }
+
+    // 更新 UI 状态
+    function updatePinUI() {
+      const count = pins.length;
+      pinCountEl.textContent = `已固定 ${count} 个`;
+      clearBtn.disabled = count === 0;
+    }
+
+    // ---- 中心预览效果 ----
+    let previewTimer = null;
+
+    function showPreview() {
+      const rect = getImgRect();
+      if (rect.width === 0) return;
+
+      previewMagnifier.style.width  = lensSize + 'px';
+      previewMagnifier.style.height = lensSize + 'px';
+      previewMagnifier.style.backgroundImage = `url("${img.src}")`;
+      previewMagnifier.style.backgroundSize  = `${rect.width * zoomLevel}px ${rect.height * zoomLevel}px`;
+
+      // 预览放大图片中心区域
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+      const bgX = -(cx * zoomLevel - lensSize / 2);
+      const bgY = -(cy * zoomLevel - lensSize / 2);
+      previewMagnifier.style.backgroundPosition = `${bgX}px ${bgY}px`;
+
+      previewLabel.textContent = `倍率 ${zoomLevel.toFixed(1)}x · 大小 ${lensSize}px`;
+
+      previewMagnifier.classList.add('show');
+
+      clearTimeout(previewTimer);
+      previewTimer = setTimeout(() => {
+        previewMagnifier.classList.remove('show');
+      }, 1800);
+    }
+
+    // ---- 下载图片（含放大镜标注）----
+    async function downloadImage() {
+      try {
+        // 用独立 Image 对象加载，确保 canvas 可用
+        const imageObj = new Image();
+        imageObj.crossOrigin = 'anonymous';
+
+        await new Promise((resolve, reject) => {
+          imageObj.onload = resolve;
+          imageObj.onerror = reject;
+          imageObj.src = img.src;
+        });
+
+        const nw = imageObj.naturalWidth;
+        const nh = imageObj.naturalHeight;
+
+        const canvas = document.createElement('canvas');
+        canvas.width  = nw;
+        canvas.height = nh;
+        const ctx = canvas.getContext('2d');
+
+        // 1) 绘制原图
+        ctx.drawImage(imageObj, 0, 0, nw, nh);
+
+        // 2) 绘制每个固定放大镜标注
+        const rect  = getImgRect();
+        if (rect.width > 0 && pins.length > 0) {
+          const scale = nw / rect.width;          // 自然像素 / 显示像素
+          const lensN = lensSize * scale;          // 镜片在原图上的尺寸（自然像素）
+
+          pins.forEach(pin => {
+            const cx = pin.xRatio * nw;            // 标注中心 x
+            const cy = pin.yRatio * nh;            // 标注中心 y
+            const r  = lensN / 2;
+
+            // 源区域：以中心点为基准，按 zoom 缩放后取出的原图区域
+            const srcSize = lensN / pin.zoom;
+            const srcX = cx - srcSize / 2;
+            const srcY = cy - srcSize / 2;
+
+            // ---- 圆形裁剪 + 放大区域 ----
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.drawImage(
+              imageObj,
+              srcX, srcY, srcSize, srcSize,
+              cx - r, cy - r, lensN, lensN
+            );
+            ctx.restore();
+
+            // ---- 琥珀色边框 ----
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.85)';
+            ctx.lineWidth   = Math.max(2, 3 * scale);
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur  = 6 * scale;
+            ctx.stroke();
+            ctx.restore();
+
+            // ---- 中心十字准星 ----
+            ctx.save();
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+            ctx.lineWidth   = Math.max(1, 1 * scale);
+            const cross = 10 * scale;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - cross);
+            ctx.lineTo(cx, cy + cross);
+            ctx.moveTo(cx - cross, cy);
+            ctx.lineTo(cx + cross, cy);
+            ctx.stroke();
+            ctx.restore();
+          });
+        }
+
+        // 3) 导出下载
+        const hasPins = pins.length > 0;
+        const filename = hasPins
+          ? `magnifier-annotated-${pins.length}pin.jpg`
+          : 'magnifier-image.jpg';
+
+        canvas.toBlob((blob) => {
+          if (!blob) { window.open(img.src, '_blank'); return; }
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 'image/jpeg', 0.95);
+
+      } catch (e) {
+        console.error('下载失败:', e);
+        // 降级：直接打开原图
+        window.open(img.src, '_blank');
+      }
+    }
+
+    // ---- 模式切换 ----
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode;
+        isMagnifyMode = (mode === 'magnify');
+
+        // 更新按钮高亮
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // 更新图片容器样式
+        if (isMagnifyMode) {
+          wrapper.classList.remove('normal-mode');
+          modeBadge.textContent = '🔍 放大标注模式';
+          modeBadge.classList.remove('normal');
+          // 若鼠标已在图片上，立即显示浮动放大镜
+          const rect = getImgRect();
+          const mx = lastMouseX - rect.left;
+          const my = lastMouseY - rect.top;
+          if (mx >= 0 && my >= 0 && mx <= rect.width && my <= rect.height) {
+            magnifier.classList.add('active');
+            refreshFloating();
+          }
+        } else {
+          wrapper.classList.add('normal-mode');
+          modeBadge.textContent = '👁️ 普通模式';
+          modeBadge.classList.add('normal');
+          magnifier.classList.remove('active');
+        }
+      });
+    });
+
+    // ---- 浮动放大镜：鼠标移入 ----
+    wrapper.addEventListener('mouseenter', () => {
+      if (!isMagnifyMode) return;
+      magnifier.classList.add('active');
+    });
+
+    // ---- 浮动放大镜：鼠标移出 ----
+    wrapper.addEventListener('mouseleave', () => {
+      magnifier.classList.remove('active');
+    });
+
+    // ---- 浮动放大镜：鼠标移动 ----
+    wrapper.addEventListener('mousemove', (e) => {
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+
+      if (!isMagnifyMode) return;
+
+      const rect = getImgRect();
+      const wRect = getWrapperRect();
+
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      if (mx < 0 || my < 0 || mx > rect.width || my > rect.height) {
+        magnifier.classList.remove('active');
+        return;
+      }
+      magnifier.classList.add('active');
+
+      const lensX = mx + (rect.left - wRect.left) - lensSize / 2;
+      const lensY = my + (rect.top  - wRect.top)  - lensSize / 2;
+
+      magnifier.style.left = lensX + 'px';
+      magnifier.style.top  = lensY + 'px';
+      magnifier.style.backgroundImage   = `url("${img.src}")`;
+      magnifier.style.backgroundSize    = `${rect.width * zoomLevel}px ${rect.height * zoomLevel}px`;
+      const bgX = -(mx * zoomLevel - lensSize / 2);
+      const bgY = -(my * zoomLevel - lensSize / 2);
+      magnifier.style.backgroundPosition = `${bgX}px ${bgY}px`;
+    });
+
+    // ---- 点击图片 → 固定放大区域 ----
+    wrapper.addEventListener('click', (e) => {
+      if (!isMagnifyMode) return;
+      // 点击删除按钮不触发固定
+      if (e.target.closest('.pin-delete')) return;
+
+      const rect = getImgRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      if (mx < 0 || my < 0 || mx > rect.width || my > rect.height) return;
+
+      const xRatio = mx / rect.width;
+      const yRatio = my / rect.height;
+
+      createPin(xRatio, yRatio, zoomLevel);
+    });
+
+    // ---- 滚轮调节倍率 ----
+    wrapper.addEventListener('wheel', (e) => {
+      if (!isMagnifyMode) return;
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.5 : 0.5;
+      zoomLevel = Math.round((zoomLevel + delta) * 2) / 2;
+      zoomLevel = Math.max(2, Math.min(8, zoomLevel));
+      zoomSlider.value = zoomLevel;
+      updateZoomDisplay();
+      refreshFloating();
+      showPreview();
+    }, { passive: false });
+
+    // 刷新浮动放大镜
+    function refreshFloating() {
+      if (!magnifier.classList.contains('active')) return;
+      const rect = getImgRect();
+      const wRect = getWrapperRect();
+      const mx = lastMouseX - rect.left;
+      const my = lastMouseY - rect.top;
+      const lensX = mx + (rect.left - wRect.left) - lensSize / 2;
+      const lensY = my + (rect.top  - wRect.top)  - lensSize / 2;
+      magnifier.style.left = lensX + 'px';
+      magnifier.style.top  = lensY + 'px';
+      magnifier.style.backgroundSize    = `${rect.width * zoomLevel}px ${rect.height * zoomLevel}px`;
+      const bgX = -(mx * zoomLevel - lensSize / 2);
+      const bgY = -(my * zoomLevel - lensSize / 2);
+      magnifier.style.backgroundPosition = `${bgX}px ${bgY}px`;
+    }
+
+    // ---- 滑块：放大倍率 ----
+    zoomSlider.addEventListener('input', () => {
+      zoomLevel = parseFloat(zoomSlider.value);
+      updateZoomDisplay();
+      refreshFloating();
+      showPreview();
+    });
+
+    // ---- 滑块：区域大小 (同时影响浮动 + 全部固定) ----
+    lensSlider.addEventListener('input', () => {
+      lensSize = parseInt(lensSlider.value);
+      lensNumInput.value = lensSize;
+      magnifier.style.width  = lensSize + 'px';
+      magnifier.style.height = lensSize + 'px';
+      refreshFloating();
+      renderAllPins();
+      showPreview();
+    });
+
+    // ---- 数值输入：区域大小 ----
+    lensNumInput.addEventListener('change', () => {
+      let val = parseInt(lensNumInput.value);
+      if (isNaN(val)) { lensNumInput.value = lensSize; return; }
+      val = Math.max(100, Math.min(350, val));
+      val = Math.round(val / 10) * 10; // 对齐步进
+      lensSize = val;
+      lensNumInput.value = val;
+      lensSlider.value = val;
+      magnifier.style.width  = lensSize + 'px';
+      magnifier.style.height = lensSize + 'px';
+      refreshFloating();
+      renderAllPins();
+      showPreview();
+    });
+
+    // ---- 下载按钮 ----
+    downloadBtn.addEventListener('click', downloadImage);
+
+    // ---- 清除全部按钮 ----
+    clearBtn.addEventListener('click', clearAllPins);
+
+    // ---- 窗口缩放 → 重新渲染固定区域 ----
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(renderAllPins, 100);
+    });
+
+    function updateZoomDisplay() {
+      zoomValue.textContent = zoomLevel.toFixed(1) + 'x';
+    }
+
+    // ---- 初始化 ----
+    updateZoomDisplay();
+    updatePinUI();
+    magnifier.style.width  = lensSize + 'px';
+    magnifier.style.height = lensSize + 'px';
+  </script>
+
+</body>
+</html>
